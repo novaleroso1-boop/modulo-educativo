@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Curso de Muralismo | Muros que Hablan</title>
+    <title>Bitácora Interactiva | Muros que Hablan</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
     
     <script>
@@ -50,6 +52,34 @@
         .rotating-img { transition: opacity 0.5s ease-in-out; }
         .img-fade-out { opacity: 0; }
 
+        /* Loader interno para iframes pesados */
+        .iframe-loader {
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            background: rgba(248, 250, 252, 0.92);
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+        .iframe-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .loading-spinner {
+            width: 42px;
+            height: 42px;
+            border-radius: 9999px;
+            border: 4px solid rgba(0, 102, 255, 0.15);
+            border-top-color: #0066FF;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         /* Modales */
         .modal-overlay { opacity: 0; visibility: hidden; transition: all 0.3s ease; backdrop-filter: blur(8px); }
         .modal-overlay.active { opacity: 1; visibility: visible; }
@@ -78,37 +108,32 @@
     <!-- NAVEGACIÓN SUPERIOR -->
     <nav class="fixed top-0 left-0 w-full bg-pola-blue backdrop-blur-md z-50 h-20 flex items-center shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex justify-between items-center">
-            <div class="flex flex-col cursor-pointer" onclick="window.scrollTo(0,0)">
-                <span class="text-[0.65rem] text-pola-yellow font-bold tracking-[0.2em] uppercase leading-none mb-1">Módulo Educativo</span>
-                <h1 class="font-heading font-black text-2xl tracking-tighter leading-none text-white">
-                    MUROS<span class="text-pola-yellow">QUE</span>HABLAN.
-                </h1>
+            <div class="flex items-center gap-3">
+                <a href="https://sites.google.com/view/colectivoepica/home" target="_top" aria-label="Volver a la página principal" title="Volver a la página principal" class="w-10 h-10 rounded-full flex items-center justify-center text-white hover:bg-white/15 active:bg-white/25 transition-all shrink-0">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </a>
+                <div class="flex flex-col cursor-pointer" onclick="scrollToTop()">
+                    <span class="text-[0.65rem] text-pola-yellow font-bold tracking-[0.2em] uppercase leading-none mb-1">Ruta de Experiencias</span>
+                    <h1 class="font-heading font-black text-2xl tracking-tighter leading-none text-white">
+                        MUROS<span class="text-pola-yellow">QUE</span>HABLAN.
+                    </h1>
+                </div>
             </div>
             
             <div class="hidden md:flex space-x-2 items-center bg-white/10 p-1.5 rounded-full border border-white/20">
-                <a href="#teoria" class="px-5 py-2 rounded-full text-sm font-bold transition-all text-white hover:bg-white/20">Teoría</a>
-                <a href="#artistas" class="px-5 py-2 rounded-full text-sm font-bold transition-all text-white hover:bg-white/20">Artistas</a>
-                <a href="#ejemplos" class="px-5 py-2 rounded-full text-sm font-bold transition-all text-white hover:bg-white/20">Ejemplos Locales</a>
+                <button onclick="scrollToSection('teoria')" class="px-5 py-2 rounded-full text-sm font-bold transition-all text-white hover:bg-white/20">Contexto</button>
+                <button onclick="scrollToSection('artistas')" class="px-5 py-2 rounded-full text-sm font-bold transition-all text-white hover:bg-white/20">Artistas</button>
+                <button onclick="scrollToSection('ejemplos')" class="px-5 py-2 rounded-full text-sm font-bold transition-all text-white hover:bg-white/20">Ejemplos Locales</button>
                 
-                <!-- Separador -->
                 <div class="w-px h-6 bg-white/30 mx-1"></div>
 
-                <button onclick="document.getElementById('padlet-modal').classList.add('active')" class="px-5 py-2 rounded-full text-sm font-bold transition-all bg-pola-yellow text-pola-dark hover:bg-white shadow-md">Muro de Actividades</button>
+                <button onclick="openPadlet()" class="px-5 py-2 rounded-full text-sm font-bold transition-all bg-pola-yellow text-pola-dark hover:bg-white shadow-md">Muro de Evidencias</button>
                 
-                <!-- Menú Desplegable Talleres -->
-                <div class="relative" id="talleres-dropdown-container">
-                    <button onclick="toggleTalleresDropdown()" class="px-5 py-2 rounded-full text-sm font-bold transition-all bg-orange-500 text-white hover:bg-orange-600 shadow-md flex items-center gap-1">
-                        Talleres
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </button>
-                    <!-- Lista desplegable -->
-                    <div id="talleres-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl py-2 hidden flex-col border border-gray-100 z-50 overflow-hidden">
-                        <button onclick="openPdfViewer('https://drive.google.com/file/d/14bgSMwrX-R5qaEzgXHprHhNC2ZN0T0CB/view?usp=sharing', 'Taller 1: Teoría del Color')" class="text-left px-5 py-3 hover:bg-orange-50 hover:text-orange-600 font-bold text-gray-700 text-sm transition-colors border-b border-gray-50">Taller 1</button>
-                        <button onclick="openPdfViewer('https://drive.google.com/file/d/14bgSMwrX-R5qaEzgXHprHhNC2ZN0T0CB/view?usp=sharing', 'Taller 2: Composición Visual')" class="text-left px-5 py-3 hover:bg-orange-50 hover:text-orange-600 font-bold text-gray-700 text-sm transition-colors border-b border-gray-50">Taller 2</button>
-                        <button onclick="openPdfViewer('https://drive.google.com/file/d/14bgSMwrX-R5qaEzgXHprHhNC2ZN0T0CB/view?usp=sharing', 'Taller 3: Conceptualización')" class="text-left px-5 py-3 hover:bg-orange-50 hover:text-orange-600 font-bold text-gray-700 text-sm transition-colors border-b border-gray-50">Taller 3</button>
-                        <button onclick="openPdfViewer('https://drive.google.com/file/d/14bgSMwrX-R5qaEzgXHprHhNC2ZN0T0CB/view?usp=sharing', 'Taller 4: Trazado y Escala')" class="text-left px-5 py-3 hover:bg-orange-50 hover:text-orange-600 font-bold text-gray-700 text-sm transition-colors">Taller 4</button>
-                    </div>
-                </div>
+                <button onclick="openPdfViewer(workshopsList[0].url, workshopsList[0].title)" class="px-5 py-2 rounded-full text-sm font-bold transition-all bg-orange-500 text-white hover:bg-orange-600 shadow-md flex items-center gap-1">
+                    Talleres
+                </button>
             </div>
 
             <button class="md:hidden text-white bg-white/20 p-2 rounded-xl" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
@@ -120,23 +145,15 @@
     <!-- Menú Móvil -->
     <div id="mobile-menu" class="hidden fixed top-20 left-0 w-full bg-pola-blue border-b-4 border-pola-yellow z-40 shadow-2xl md:hidden">
         <div class="p-6 flex flex-col space-y-3">
-            <a href="#teoria" onclick="document.getElementById('mobile-menu').classList.add('hidden')" class="text-left font-black text-xl text-white p-4 bg-white/10 rounded-2xl">📖 Teoría</a>
-            <a href="#artistas" onclick="document.getElementById('mobile-menu').classList.add('hidden')" class="text-left font-black text-xl text-white p-4 bg-white/10 rounded-2xl">👨‍🎨 Artistas</a>
-            <a href="#ejemplos" onclick="document.getElementById('mobile-menu').classList.add('hidden')" class="text-left font-black text-xl text-white p-4 bg-white/10 rounded-2xl">🖼️ Ejemplos Locales</a>
-            <button onclick="document.getElementById('mobile-menu').classList.add('hidden'); document.getElementById('padlet-modal').classList.add('active')" class="w-full text-left font-black text-xl text-pola-dark p-4 bg-pola-yellow rounded-2xl">📌 Muro de Actividades</button>
+            <button onclick="scrollToSection('teoria')" class="w-full text-left font-black text-xl text-white p-4 bg-white/10 rounded-2xl">📖 Contexto</button>
+            <button onclick="scrollToSection('artistas')" class="w-full text-left font-black text-xl text-white p-4 bg-white/10 rounded-2xl">👨‍🎨 Artistas</button>
+            <button onclick="scrollToSection('ejemplos')" class="w-full text-left font-black text-xl text-white p-4 bg-white/10 rounded-2xl">🖼️ Ejemplos Locales</button>
+            <button onclick="document.getElementById('mobile-menu').classList.add('hidden'); openPadlet()" class="w-full text-left font-black text-xl text-pola-dark p-4 bg-pola-yellow rounded-2xl">📌 Muro de Evidencias</button>
             
             <div class="w-full">
-                <button onclick="toggleMobileTalleres()" class="w-full text-left font-black text-xl text-white p-4 bg-orange-500 rounded-2xl flex justify-between items-center">
+                <button onclick="document.getElementById('mobile-menu').classList.add('hidden'); openPdfViewer(workshopsList[0].url, workshopsList[0].title)" class="w-full text-left font-black text-xl text-white p-4 bg-orange-500 rounded-2xl flex justify-between items-center">
                     <span>📚 Talleres</span>
-                    <svg id="mobile-talleres-icon" class="w-6 h-6 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
-                <!-- Submenú móvil -->
-                <div id="mobile-talleres-list" class="hidden flex-col gap-2 mt-2 pl-4">
-                    <button onclick="document.getElementById('mobile-menu').classList.add('hidden'); openPdfViewer('https://drive.google.com/file/d/14bgSMwrX-R5qaEzgXHprHhNC2ZN0T0CB/view?usp=sharing', 'Taller 1: Teoría del Color')" class="text-left font-bold text-lg text-white p-3 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">Taller 1</button>
-                    <button onclick="document.getElementById('mobile-menu').classList.add('hidden'); openPdfViewer('https://drive.google.com/file/d/14bgSMwrX-R5qaEzgXHprHhNC2ZN0T0CB/view?usp=sharing', 'Taller 2: Composición Visual')" class="text-left font-bold text-lg text-white p-3 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">Taller 2</button>
-                    <button onclick="document.getElementById('mobile-menu').classList.add('hidden'); openPdfViewer('https://drive.google.com/file/d/14bgSMwrX-R5qaEzgXHprHhNC2ZN0T0CB/view?usp=sharing', 'Taller 3: Conceptualización')" class="text-left font-bold text-lg text-white p-3 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">Taller 3</button>
-                    <button onclick="document.getElementById('mobile-menu').classList.add('hidden'); openPdfViewer('https://drive.google.com/file/d/14bgSMwrX-R5qaEzgXHprHhNC2ZN0T0CB/view?usp=sharing', 'Taller 4: Trazado y Escala')" class="text-left font-bold text-lg text-white p-3 bg-white/10 rounded-xl hover:bg-white/20 transition-colors">Taller 4</button>
-                </div>
             </div>
         </div>
     </div>
@@ -160,14 +177,14 @@
                     <p class="text-gray-100 text-base md:text-lg font-medium leading-relaxed mb-8 drop-shadow-md">
                         Aprende cómo las paredes grises de nuestra ciudad se convierten en lienzos que cuentan historias, sanan heridas y construyen paz.
                     </p>
-                    <a href="#teoria" class="inline-flex bg-white text-pola-dark px-8 py-3.5 rounded-2xl font-black uppercase tracking-wider hover:bg-pola-blue hover:text-white transition-all items-center gap-3 w-fit shadow-xl">
+                    <button onclick="scrollToSection('teoria')" class="inline-flex bg-white text-pola-dark px-8 py-3.5 rounded-2xl font-black uppercase tracking-wider hover:bg-pola-blue hover:text-white transition-all items-center gap-3 w-fit shadow-xl">
                         Comenzar a Aprender ↓
-                    </a>
+                    </button>
                 </div>
             </div>
         </header>
 
-        <!-- SECCIÓN 1: TEORÍA Y CONTEXTO -->
+        <!-- SECCIÓN 1: CONTEXTO Y TEORÍA -->
         <section id="teoria" class="py-16 bg-white border-y border-gray-200 scroll-mt-20">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex flex-col md:flex-row gap-12 items-center">
@@ -355,7 +372,7 @@
                             <p class="text-white mb-4 leading-relaxed">El color es una de las herramientas más poderosas del muralista. No se trata solo de mezclar pintura, sino de comprender cómo los colores se comunican entre sí y con el entorno. Los colores fríos y cálidos generan distintas emociones, contrastes y volúmenes en la pared.</p>
                             <p class="text-blue-100 text-sm mb-6">Aprende a crear armonías visuales que capturen la atención del espectador desde lejos.</p>
                             <button onclick="openWorkshopSelection('color')" class="bg-pola-yellow text-pola-dark hover:bg-white px-8 py-3.5 rounded-xl font-black uppercase tracking-wider text-sm transition-colors shadow-lg">
-                                Realizar Taller 1 🎨
+                                Explora 🎨
                             </button>
                         </div>
                         <div class="lg:w-1/2 w-full flex items-center justify-center p-2">
@@ -374,7 +391,7 @@
                             <p class="text-white mb-4 leading-relaxed">Descubre cómo distribuir los elementos gráficos en tu diseño de manera armónica. Una buena composición guía el ojo del espectador, crea equilibrio y asegura que el mensaje central de tu mural se entienda de forma clara y directa en el espacio monumental.</p>
                             <p class="text-blue-100 text-sm mb-6">Conocer las reglas de composición te permitirá romperlas con creatividad y propósito.</p>
                             <button onclick="openWorkshopSelection('composicion')" class="bg-green-500 hover:bg-green-400 text-white px-8 py-3.5 rounded-xl font-black uppercase tracking-wider text-sm transition-colors shadow-lg">
-                                Realizar Taller 2 📏
+                                Explora 📏
                             </button>
                         </div>
                         <div class="lg:w-1/2 w-full flex items-center justify-center p-2">
@@ -393,7 +410,7 @@
                             <p class="text-white mb-4 leading-relaxed">Antes de pintar, necesitas una idea sólida. Aprende a tomar conceptos, historias y emociones de tu comunidad para transformarlos en una ilustración impactante. Aquí es donde decides los símbolos, los personajes y el mensaje que quieres plasmar en el territorio.</p>
                             <p class="text-blue-100 text-sm mb-6">La conceptualización transforma una simple imagen en un discurso visual con impacto social.</p>
                             <button onclick="openWorkshopSelection('conceptualizacion')" class="bg-purple-500 hover:bg-purple-400 text-white px-8 py-3.5 rounded-xl font-black uppercase tracking-wider text-sm transition-colors shadow-lg">
-                                Realizar Taller 3 💭
+                                Explora 💭
                             </button>
                         </div>
                         <div class="lg:w-1/2 w-full flex items-center justify-center p-2">
@@ -412,7 +429,7 @@
                             <p class="text-white mb-4 leading-relaxed">Ha llegado el momento de enfrentar la pared. Conoce las técnicas esenciales para proyectar y trasladar tu dibujo pequeño a un formato gigante sin deformar las proporciones ni la escala, manteniendo la fidelidad de tu diseño original.</p>
                             <p class="text-blue-100 text-sm mb-6">Es la unión definitiva entre tu diseño en papel y la arquitectura pública monumental.</p>
                             <button onclick="openWorkshopSelection('ejecucion')" class="bg-blue-500 hover:bg-blue-400 text-white px-8 py-3.5 rounded-xl font-black uppercase tracking-wider text-sm transition-colors shadow-lg">
-                                Realizar Taller 4 🧱
+                                Explora 🧱
                             </button>
                         </div>
                         <div class="lg:w-1/2 w-full flex items-center justify-center p-2">
@@ -436,250 +453,7 @@
 
 
     <!-- ==========================================
-         NUEVO: MODAL MENÚ DE TALLERES
-         ========================================== -->
-    <div id="talleres-menu-modal" class="fixed inset-0 bg-pola-dark/90 backdrop-blur-md z-[110] modal-overlay flex justify-center items-center p-4">
-        <div class="bg-white/95 backdrop-blur-3xl rounded-[3rem] w-full max-w-5xl modal-content shadow-2xl relative p-8 md:p-12 text-center border border-white/40 overflow-hidden">
-            <button onclick="closeModal('talleres-menu-modal')" class="absolute top-6 right-6 w-12 h-12 bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-500 rounded-full flex items-center justify-center transition-colors z-10">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-            <span class="text-orange-500 font-black tracking-[0.2em] uppercase text-sm mb-2 block drop-shadow-sm">Ruta de Formación</span>
-            <h2 class="text-4xl md:text-5xl font-heading font-black text-pola-dark mb-10">Selecciona un Taller</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Taller 1 (Activo) -->
-                <div onclick="openTaller1Guide()" class="bg-gradient-to-br from-pola-yellow to-yellow-500 rounded-[2rem] p-8 cursor-pointer hover:-translate-y-2 transition-all text-center border border-white/20 shadow-xl group">
-                    <div class="text-5xl mb-4 group-hover:scale-110 transition-transform drop-shadow-md">🎨</div>
-                    <span class="text-pola-dark font-black uppercase tracking-widest text-[10px] mb-2 block bg-white/30 rounded-full px-2 py-1 mx-auto w-fit">Taller 1</span>
-                    <h3 class="font-heading font-black text-xl mb-4 text-pola-dark leading-tight">Teoría del Color Aplicada</h3>
-                    <span class="bg-pola-dark text-white font-bold px-6 py-2 rounded-full text-xs uppercase tracking-widest group-hover:bg-white group-hover:text-pola-dark transition-colors">Entrar</span>
-                </div>
-
-                <!-- Taller 2 (Próximamente) -->
-                <div onclick="alert('¡Estamos diseñando la guía para este taller! Pronto estará disponible.')" class="bg-gray-100 rounded-[2rem] p-8 cursor-pointer hover:-translate-y-1 transition-all text-center border border-gray-200 shadow-sm opacity-70 group">
-                    <div class="text-5xl mb-4 grayscale group-hover:grayscale-0 transition-all">⚖️</div>
-                    <span class="text-gray-500 font-black uppercase tracking-widest text-[10px] mb-2 block bg-gray-200 rounded-full px-2 py-1 mx-auto w-fit">Taller 2</span>
-                    <h3 class="font-heading font-black text-xl mb-4 text-gray-700 leading-tight">Composición Visual</h3>
-                    <span class="bg-gray-300 text-gray-600 font-bold px-6 py-2 rounded-full text-xs uppercase tracking-widest">Próximamente</span>
-                </div>
-
-                <!-- Taller 3 (Próximamente) -->
-                <div onclick="alert('¡Estamos diseñando la guía para este taller! Pronto estará disponible.')" class="bg-gray-100 rounded-[2rem] p-8 cursor-pointer hover:-translate-y-1 transition-all text-center border border-gray-200 shadow-sm opacity-70 group">
-                    <div class="text-5xl mb-4 grayscale group-hover:grayscale-0 transition-all">💭</div>
-                    <span class="text-gray-500 font-black uppercase tracking-widest text-[10px] mb-2 block bg-gray-200 rounded-full px-2 py-1 mx-auto w-fit">Taller 3</span>
-                    <h3 class="font-heading font-black text-xl mb-4 text-gray-700 leading-tight">Conceptualización</h3>
-                    <span class="bg-gray-300 text-gray-600 font-bold px-6 py-2 rounded-full text-xs uppercase tracking-widest">Próximamente</span>
-                </div>
-
-                <!-- Taller 4 (Próximamente) -->
-                <div onclick="alert('¡Estamos diseñando la guía para este taller! Pronto estará disponible.')" class="bg-gray-100 rounded-[2rem] p-8 cursor-pointer hover:-translate-y-1 transition-all text-center border border-gray-200 shadow-sm opacity-70 group">
-                    <div class="text-5xl mb-4 grayscale group-hover:grayscale-0 transition-all">🧱</div>
-                    <span class="text-gray-500 font-black uppercase tracking-widest text-[10px] mb-2 block bg-gray-200 rounded-full px-2 py-1 mx-auto w-fit">Taller 4</span>
-                    <h3 class="font-heading font-black text-xl mb-4 text-gray-700 leading-tight">Trazado y Escala</h3>
-                    <span class="bg-gray-300 text-gray-600 font-bold px-6 py-2 rounded-full text-xs uppercase tracking-widest">Próximamente</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ==========================================
-         NUEVO: MODAL GUÍA DE LECTURA (TALLER 1)
-         ========================================== -->
-    <div id="guide-taller1-modal" class="fixed inset-0 bg-orange-600/95 backdrop-blur-md z-[120] modal-overlay flex justify-center items-center p-0 md:p-6">
-        <div class="bg-white md:rounded-[2rem] w-full h-full md:h-[95vh] max-w-5xl flex flex-col modal-content shadow-2xl relative overflow-hidden border-0 md:border-4 border-pola-yellow">
-            
-            <!-- Header Sticky con Switcher -->
-            <div class="bg-white border-b-2 border-gray-100 p-4 md:p-6 shrink-0 flex flex-col md:flex-row items-center justify-between gap-4 z-20 shadow-sm">
-                <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
-                    <div class="flex flex-col">
-                        <span class="text-pola-blue font-black tracking-widest uppercase text-[10px] leading-none">Guía de Aprendizaje</span>
-                        <h3 class="font-heading font-black text-xl md:text-2xl text-pola-dark">Taller 1: Color</h3>
-                    </div>
-                    <button onclick="closeModal('guide-taller1-modal')" class="md:hidden w-8 h-8 bg-gray-100 text-gray-500 rounded-full flex items-center justify-center">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                </div>
-                
-                <!-- Toggle Switcher -->
-                <div class="bg-gray-100 p-1.5 rounded-full flex w-full md:w-auto shadow-inner relative">
-                    <button id="btn-tab-digital" onclick="switchTaller1Tab('digital')" class="flex-1 md:flex-none px-6 py-2.5 rounded-full text-sm font-bold transition-all bg-pola-dark text-white shadow-md flex items-center justify-center gap-2">
-                        💻 <span class="hidden sm:inline">Actividad</span> Digital
-                    </button>
-                    <button id="btn-tab-manual" onclick="switchTaller1Tab('manual')" class="flex-1 md:flex-none px-6 py-2.5 rounded-full text-sm font-bold transition-all bg-transparent text-gray-500 hover:text-pola-dark flex items-center justify-center gap-2">
-                        🎨 <span class="hidden sm:inline">Actividad</span> Manual
-                    </button>
-                </div>
-
-                <button onclick="closeModal('guide-taller1-modal')" class="hidden md:flex w-10 h-10 bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-500 rounded-full items-center justify-center transition-colors shrink-0">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-
-            <!-- Scrollable Content Area -->
-            <div class="flex-1 overflow-y-auto bg-gray-50 relative p-4 md:p-8 scroll-smooth">
-                
-                <!-- CONTENIDO: ACTIVIDAD DIGITAL -->
-                <div id="content-digital" class="max-w-3xl mx-auto space-y-8 pb-12 anim-fade-up active">
-                    
-                    <!-- Intro -->
-                    <div class="bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-gray-200 relative overflow-hidden">
-                        <div class="absolute top-0 left-0 w-2 h-full bg-blue-500"></div>
-                        <h2 class="font-heading font-black text-2xl md:text-3xl text-pola-dark mb-4">Módulo 1: Ilustración Digital y Volumen con Colores Complementarios</h2>
-                        <p class="text-gray-700 text-lg leading-relaxed mb-4">
-                            <strong>¡Hola, creador!</strong> Qué bueno tenerte en este espacio. Hoy vamos a elevar el nivel de tus ilustraciones digitales. Seguramente ya sabes aplicar colores base, pero el verdadero reto para que un personaje o un objeto cobre vida en la pantalla es darle volumen.
-                        </p>
-                        <p class="text-gray-700 text-lg leading-relaxed">
-                            Hoy aprenderemos a generar esa sensación de tres dimensiones utilizando la teoría del color a nuestro favor.
-                        </p>
-                    </div>
-
-                    <!-- Estudio Digital -->
-                    <div class="flex gap-4 items-start">
-                        <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-2xl shrink-0">💻</div>
-                        <div>
-                            <h3 class="font-bold text-xl text-pola-dark mb-2">Tu Estudio Digital</h3>
-                            <p class="text-gray-600 leading-relaxed bg-white p-4 rounded-xl border border-gray-200">
-                                Para empezar, necesitas un software de ilustración. Si prefieres trabajar desde tu celular o tablet, te sugerimos <strong>IbisPaint X</strong>. Si usas un computador, <strong>Krita</strong> es excelente, o puedes usar <strong>Photopea</strong> directamente desde tu navegador sin instalar nada.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- El Secreto del Volumen -->
-                    <div>
-                        <h3 class="font-bold text-xl text-pola-dark mb-3 border-l-4 border-pola-yellow pl-3">El Secreto del Volumen: Adiós al Negro</h3>
-                        <p class="text-gray-600 leading-relaxed mb-6">
-                            Uno de los errores más comunes al sombrear digitalmente es simplemente usar color negro o gris. Esto hace que la ilustración se vea sucia. La clave está en los <strong>colores complementarios</strong>: aquellos que están exactamente en el lado opuesto del círculo cromático.
-                        </p>
-                        
-                        <!-- Lista de colores -->
-                        <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-200 mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-                            <div class="bg-gray-50 py-3 rounded-xl font-bold text-gray-700 border border-gray-100">🟡 Amarillo <br><span class="text-xs font-normal text-gray-400">↔️</span><br> 🟣 Morado</div>
-                            <div class="bg-gray-50 py-3 rounded-xl font-bold text-gray-700 border border-gray-100">🟠 Naranja <br><span class="text-xs font-normal text-gray-400">↔️</span><br> 🔵 Azul</div>
-                            <div class="bg-gray-50 py-3 rounded-xl font-bold text-gray-700 border border-gray-100">🔴 Rojo <br><span class="text-xs font-normal text-gray-400">↔️</span><br> 🟢 Verde</div>
-                        </div>
-
-                        <!-- Imagen 1 Placeholder -->
-                        <div class="w-full rounded-2xl overflow-hidden shadow-md mb-6 relative group">
-                            <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=1200&q=80" alt="Círculo cromático con flechas cruzando colores complementarios" class="w-full h-64 object-cover">
-                            <div class="absolute inset-0 bg-pola-dark/50 flex items-center justify-center p-4">
-                                <span class="bg-white/90 text-pola-dark text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider text-center">Círculo cromático de colores complementarios</span>
-                            </div>
-                        </div>
-
-                        <p class="text-gray-600 leading-relaxed mb-8">
-                            Al usar estos colores opuestos juntos, uno como luz y el otro como sombra, se crea un contraste vibrante y dinámico que engaña al ojo y genera profundidad.
-                        </p>
-                    </div>
-
-                    <!-- Reto Práctico -->
-                    <div class="bg-gradient-to-br from-pola-blue to-blue-800 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
-                        <div class="absolute top-0 right-0 text-[10rem] opacity-10 -mt-10 -mr-10">🚀</div>
-                        <h3 class="font-heading font-black text-2xl mb-4 relative z-10 flex items-center gap-3">🚀 Tu Reto Práctico</h3>
-                        <p class="text-blue-50 leading-relaxed mb-4 relative z-10 font-medium">
-                            Vas a dibujar un personaje, un objeto complejo o un escenario que te guste en tu programa de ilustración. Una vez tengas tu dibujo lineal, elige una sola pareja de colores complementarios (por ejemplo, amarillo para la luz y morado para la sombra).
-                        </p>
-                        <p class="text-blue-50 leading-relaxed mb-6 relative z-10 font-medium">
-                            Aplica tus colores base separando las zonas claras. Luego, crea una nueva capa por encima para las sombras. En lugar de oscurecer el amarillo con negro, utiliza el morado. Con un pincel suave o bajando la opacidad en tu programa, difumina ese morado sobre las áreas donde no llega la luz. Juega con la mezcla óptica hasta lograr esa ilusión de profundidad. ¡Verás cómo tu personaje parece salir de la pantalla!
-                        </p>
-                        
-                        <!-- Imagen 2 Placeholder -->
-                        <div class="w-full rounded-2xl overflow-hidden shadow-lg border-2 border-white/20 relative bg-black">
-                            <div class="grid grid-cols-2">
-                                <div class="h-48 bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80')] bg-cover bg-left opacity-60 mix-blend-luminosity bg-yellow-400"></div>
-                                <div class="h-48 bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80')] bg-cover bg-right"></div>
-                            </div>
-                            <div class="absolute inset-0 flex items-center justify-center p-4">
-                                <span class="bg-black/80 text-white text-xs font-bold px-4 py-2 rounded-full uppercase tracking-wider text-center border border-white/30 backdrop-blur-md">Ejemplo: Rostro sombreado con negro (Plano) VS Sombreado Complementario (Volumen)</span>
-                            </div>
-                            <!-- Separator line -->
-                            <div class="absolute top-0 left-1/2 w-1 h-full bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] -translate-x-1/2"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- CONTENIDO: ACTIVIDAD MANUAL -->
-                <div id="content-manual" class="max-w-3xl mx-auto space-y-8 pb-12 hidden">
-                    
-                    <!-- Intro -->
-                    <div class="bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-gray-200 relative overflow-hidden">
-                        <div class="absolute top-0 left-0 w-2 h-full bg-orange-500"></div>
-                        <h2 class="font-heading font-black text-2xl md:text-3xl text-pola-dark mb-4">Módulo 2: Pintura Manual y Sombras Cromáticas</h2>
-                        <p class="text-gray-700 text-lg leading-relaxed mb-4">
-                            <strong>¡Bienvenido de vuelta, artista!</strong> Es hora de alejarnos un poco de las pantallas. Trabajar con pintura real nos obliga a pensar diferente, porque aquí los pigmentos interactúan y se funden en el papel.
-                        </p>
-                        <p class="text-gray-700 text-lg leading-relaxed">
-                            Vamos a utilizar la pintura para entender cómo los colores opuestos no solo contrastan, sino que se "quiebran" entre sí para crear las sombras perfectas.
-                        </p>
-                    </div>
-
-                    <!-- Materiales -->
-                    <div class="flex gap-4 items-start">
-                        <div class="w-12 h-12 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-2xl shrink-0">🖌️</div>
-                        <div>
-                            <h3 class="font-bold text-xl text-pola-dark mb-2">Lo que necesitas en tu mesa</h3>
-                            <p class="text-gray-600 leading-relaxed bg-white p-4 rounded-xl border border-gray-200">
-                                Prepara tus pinturas (acrílicos o vinilos). Solo necesitarás una pareja de colores complementarios (ejemplo: <strong>Naranja y Azul</strong>), más un poco de blanco. Ten lista una cartulina o papel grueso, pinceles, agua, un trapo y una paleta para mezclar.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- La Teoría -->
-                    <div>
-                        <h3 class="font-bold text-xl text-pola-dark mb-3 border-l-4 border-orange-500 pl-3">La Teoría en la Paleta: Quebrando el Color</h3>
-                        <p class="text-gray-600 leading-relaxed mb-4">
-                            En la pintura tradicional, si a una manzana roja le pones negro directo para la sombra, se verá plana y sin vida. El secreto de los grandes pintores es "quebrar" el color usando su complementario.
-                        </p>
-                        <p class="text-gray-600 leading-relaxed mb-6">
-                            Si mezclas colores opuestos, se neutralizan creando tonos oscuros y tierras súper naturales:
-                        </p>
-                        
-                        <div class="bg-gray-800 p-4 rounded-2xl text-center mb-6 shadow-md border-2 border-gray-700">
-                            <p class="text-lg font-bold text-white tracking-wide">
-                                <span class="text-red-400">🔴 Rojo puro</span> + <span class="text-green-400">🟢 Pizca de Verde</span> = <span class="text-amber-700">🟤 Sombra profunda natural</span>
-                            </p>
-                        </div>
-
-                        <!-- Imagen 1 Placeholder -->
-                        <div class="w-full rounded-2xl overflow-hidden shadow-md mb-6 relative group">
-                            <img src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=1200&q=80" alt="Paleta de pintura mezclando naranja y azul" class="w-full h-64 object-cover">
-                            <div class="absolute inset-0 bg-pola-dark/40 flex items-center justify-center p-4">
-                                <span class="bg-white/90 text-pola-dark text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider text-center">Paleta de pintura mezclando colores complementarios</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Reto Práctico -->
-                    <div class="bg-gradient-to-br from-orange-500 to-red-600 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden">
-                        <div class="absolute top-0 right-0 text-[10rem] opacity-10 -mt-10 -mr-10">🎨</div>
-                        <h3 class="font-heading font-black text-2xl mb-4 relative z-10 flex items-center gap-3">🚀 Tu Reto Práctico</h3>
-                        <p class="text-orange-50 leading-relaxed mb-4 relative z-10 font-medium">
-                            Elige un elemento tridimensional para pintar (una calavera, una taza con pliegues o un rostro geométrico) y dibuja su contorno en tu cartulina.
-                        </p>
-                        <p class="text-orange-50 leading-relaxed mb-6 relative z-10 font-medium">
-                            Prepara en tu paleta el color base de la luz (digamos, naranja) y pinta las zonas iluminadas de tu objeto. Mientras la pintura sigue fresca en el papel, toma un poco de ese mismo naranja en tu paleta y agrégale una pizca de azul. Verás nacer un tono gris cálido o tierra. Aplica esta nueva mezcla en las zonas de sombra e intenta fundir los bordes suavemente usando el pincel húmedo donde se encuentra con el naranja claro.
-                        </p>
-                        <p class="text-white font-bold bg-black/20 p-4 rounded-xl mb-6 relative z-10">
-                            Tu objetivo es lograr que el objeto se vea totalmente tridimensional utilizando solo esos dos colores opuestos. ¡El contraste hará que la zona iluminada brille muchísimo más!
-                        </p>
-                        
-                        <!-- Imagen 2 Placeholder -->
-                        <div class="w-full rounded-2xl overflow-hidden shadow-lg border-2 border-white/20 relative bg-white">
-                            <img src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=1200&q=80" alt="Esfera tridimensional pintada con luz naranja y sombra azulada" class="w-full h-56 object-cover mix-blend-multiply opacity-80">
-                            <div class="absolute inset-0 bg-gradient-to-r from-orange-500/30 to-blue-800/30 mix-blend-color"></div>
-                            <div class="absolute inset-0 flex items-center justify-center p-4">
-                                <span class="bg-black/80 text-white text-xs font-bold px-4 py-2 rounded-full uppercase tracking-wider text-center border border-white/30 backdrop-blur-md">Ejemplo: Esfera tridimensional pintada con luz naranja y sombra azulada</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-
-    <!-- ==========================================
-         MODAL: SELECCIÓN DE ACTIVIDAD (A / B)
+         MODAL SELECCIÓN ACTIVIDAD
          ========================================== -->
     <div id="selection-modal" class="fixed inset-0 bg-pola-dark/80 backdrop-blur-xl z-[100] modal-overlay flex justify-center items-center p-4">
         <div class="bg-white/95 backdrop-blur-3xl rounded-[3rem] w-full max-w-5xl modal-content shadow-2xl relative p-8 md:p-12 text-center border border-white/40 overflow-hidden">
@@ -692,34 +466,258 @@
         </div>
     </div>
 
-
     <!-- ==========================================
-         MODALES INTERACTIVOS (LAS ACTIVIDADES)
+         MODAL JUEGO COMPOSICIÓN (IFRAME)
          ========================================== -->
-         
-    <!-- 1. MODAL TEXTO (Muro de las Voces) -->
-    <div id="text-modal" class="fixed inset-0 bg-purple-900/95 backdrop-blur-md z-[110] modal-overlay flex justify-center items-center p-4">
-        <div class="bg-white rounded-[3rem] w-full max-w-3xl modal-content shadow-2xl relative p-8 md:p-12 text-center border-8 border-pola-dark">
-            <button onclick="closeModal('text-modal')" class="absolute top-6 right-6 w-12 h-12 bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-500 rounded-full flex items-center justify-center transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-            <div id="text-icon" class="w-20 h-20 bg-purple-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-4 shadow-xl text-white">✍️</div>
-            <h2 id="text-title" class="text-3xl md:text-4xl font-heading font-black text-pola-dark mb-4">Título</h2>
-            <p id="text-desc" class="text-gray-600 text-base font-medium mb-6">Instrucciones...</p>
-            
-            <div class="bg-gray-50 border-2 border-gray-200 rounded-2xl p-4 text-left shadow-inner mb-6">
-                <textarea id="text-input" class="w-full h-32 bg-transparent resize-none outline-none text-gray-700 font-medium text-lg placeholder-gray-400" placeholder="Escribe aquí..."></textarea>
+    <div id="composition-modal" class="fixed inset-0 bg-green-900/95 backdrop-blur-md z-[110] modal-overlay flex justify-center items-center p-4 md:p-8">
+        <div class="bg-white rounded-[2rem] w-full h-full max-h-[90vh] max-w-5xl modal-content shadow-2xl relative flex flex-col overflow-hidden">
+            <div class="bg-pola-dark p-4 md:p-6 flex justify-between items-center text-white shrink-0 border-b-4 border-green-400">
+                <div>
+                    <h3 class="font-heading font-black text-2xl flex items-center gap-3">⚖️ Juego de Composición</h3>
+                </div>
+                <button onclick="closeCompositionModal()" class="w-10 h-10 bg-white/10 hover:bg-red-500 rounded-full flex items-center justify-center transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
             </div>
-            
-            <button onclick="publishStory()" class="w-full bg-pola-dark text-white font-black py-4 rounded-2xl uppercase tracking-widest hover:bg-purple-600 transition-colors text-lg shadow-xl mb-6">Publicar Aporte</button>
-            <div class="text-left border-t-2 border-gray-100 pt-4">
-                <h4 class="font-bold text-gray-400 uppercase tracking-widest text-xs mb-3">Tablero de Conceptos</h4>
-                <div id="story-feed" class="flex flex-col gap-3 max-h-32 overflow-y-auto pr-2"></div>
+            <div class="flex-1 bg-gray-100 relative overflow-hidden">
+                <div id="composition-loader" class="iframe-loader">
+                    <div class="loading-spinner"></div>
+                    <p class="text-pola-dark text-xs font-black uppercase tracking-widest">Cargando actividad...</p>
+                </div>
+                <iframe id="composition-iframe" data-src="https://novaleroso1-boop.github.io/juego/" src="about:blank" loading="lazy" class="absolute inset-0 w-full h-full border-0" allowfullscreen onload="hideIframeLoader('composition-loader')"></iframe>
             </div>
         </div>
     </div>
 
-    <!-- 2. MODAL JUEGO CUADRÍCULA -->
+    <!-- ==========================================
+         MODAL PADLET (MURO DE EVIDENCIAS)
+         ========================================== -->
+    <div id="padlet-modal" class="fixed top-20 left-0 right-0 bottom-0 bg-white z-40 modal-overlay flex justify-center items-center p-0 overflow-hidden">
+        <div class="w-full h-full flex flex-col modal-content relative overflow-hidden bg-gray-100">
+            <button onclick="closePadletModal()" aria-label="Cerrar muro de evidencias" class="absolute top-3 right-3 md:top-4 md:right-4 w-10 h-10 md:w-11 md:h-11 bg-black/50 hover:bg-red-500 text-white rounded-full shadow-xl flex items-center justify-center transition-all backdrop-blur-md border border-white/30 z-30">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div class="flex-1 w-full bg-gray-200 relative overflow-hidden">
+                <div class="padlet-embed" style="border:none;box-sizing:border-box;overflow:hidden;position:relative;width:100%;height:100%;background:#F4F4F4">
+                    <div id="padlet-loader" class="iframe-loader">
+                        <div class="loading-spinner"></div>
+                        <p class="text-pola-dark text-xs font-black uppercase tracking-widest">Cargando muro...</p>
+                    </div>
+                    <p style="padding:0;margin:0;height:100%;">
+                        <iframe id="padlet-iframe" data-src="https://padlet.com/embed/7o549bbpcop2fgme" src="about:blank" loading="lazy" frameborder="0" allow="camera;microphone;geolocation;display-capture;clipboard-write" style="width:100%;height:100%;display:block;padding:0;margin:0" onload="hideIframeLoader('padlet-loader')"></iframe>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL VISOR DE PDF (TALLERES)
+         ========================================== -->
+    <div id="pdf-modal" class="fixed top-20 left-0 right-0 bottom-0 bg-white z-40 modal-overlay flex justify-center items-center p-0 overflow-hidden">
+        <div class="w-full h-full flex flex-col modal-content relative overflow-hidden bg-gray-100">
+            <button onclick="closePdfModal()" aria-label="Cerrar visor de talleres" class="absolute top-3 right-3 md:top-4 md:right-4 w-10 h-10 md:w-11 md:h-11 bg-black/50 hover:bg-red-500 text-white rounded-full shadow-xl flex items-center justify-center transition-all backdrop-blur-md border border-white/30 z-30">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            
+            <!-- Contenedor Flex: Barra Lateral + Visor PDF -->
+            <div class="flex-1 w-full flex relative overflow-hidden">
+                <!-- Barra Lateral Izquierda -->
+                <div class="w-16 md:w-56 bg-white border-r border-gray-200 flex flex-col gap-2 p-2 md:p-4 z-10 shadow-sm shrink-0">
+                    <span class="text-[10px] md:text-xs font-black uppercase tracking-widest text-gray-400 mb-2 md:mb-4 text-center hidden md:block">Contenido</span>
+                    
+                    <button id="sb-taller-0" onclick="openPdfViewer(workshopsList[0].url, workshopsList[0].title)" class="sidebar-btn w-full p-2 md:px-4 md:py-3 rounded-xl font-bold text-xs md:text-sm transition-all text-center md:text-left mb-1 text-gray-500 hover:bg-gray-100">
+                        <span class="md:hidden">1</span><span class="hidden md:inline">Taller 1</span>
+                    </button>
+                    <button id="sb-taller-1" onclick="openPdfViewer(workshopsList[1].url, workshopsList[1].title)" class="sidebar-btn w-full p-2 md:px-4 md:py-3 rounded-xl font-bold text-xs md:text-sm transition-all text-center md:text-left mb-1 text-gray-500 hover:bg-gray-100">
+                        <span class="md:hidden">2</span><span class="hidden md:inline">Taller 2</span>
+                    </button>
+                    <button id="sb-taller-2" onclick="openPdfViewer(workshopsList[2].url, workshopsList[2].title)" class="sidebar-btn w-full p-2 md:px-4 md:py-3 rounded-xl font-bold text-xs md:text-sm transition-all text-center md:text-left mb-1 text-gray-500 hover:bg-gray-100">
+                        <span class="md:hidden">3</span><span class="hidden md:inline">Taller 3</span>
+                    </button>
+                    <button id="sb-taller-3" onclick="openPdfViewer(workshopsList[3].url, workshopsList[3].title)" class="sidebar-btn w-full p-2 md:px-4 md:py-3 rounded-xl font-bold text-xs md:text-sm transition-all text-center md:text-left mb-1 text-gray-500 hover:bg-gray-100">
+                        <span class="md:hidden">4</span><span class="hidden md:inline">Taller 4</span>
+                    </button>
+                    
+                    <!-- Botones de acción -->
+                    <div class="mt-auto pt-4 border-t border-gray-100 w-full flex flex-col gap-2">
+                        <button id="sb-dibuja" onclick="openDrawingApp()" class="w-full p-2 md:px-4 md:py-3 rounded-xl font-black text-[9px] md:text-sm uppercase tracking-widest transition-all text-center flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 shadow-sm border-2 bg-pola-blue text-white border-pola-blue hover:scale-105 hover:bg-blue-700">
+                            <span class="text-xl md:text-2xl">✏️</span> <span>Dibuja</span>
+                        </button>
+                        <button id="sb-explora" onclick="triggerCurrentExplora()" class="hidden w-full p-2 md:px-4 md:py-3 rounded-xl font-black text-[10px] md:text-sm uppercase tracking-widest transition-all text-center flex-col md:flex-row items-center justify-center gap-1 md:gap-2 shadow-sm border-2">
+                            <span id="sb-explora-icon" class="text-xl md:text-2xl">💡</span> <span class="hidden md:inline">Explora</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Visor PDF -->
+                <div class="flex-1 relative overflow-hidden bg-gray-200">
+                    <div id="pdf-loader" class="iframe-loader hidden">
+                        <div class="loading-spinner"></div>
+                        <p class="text-pola-dark text-xs font-black uppercase tracking-widest">Cargando taller...</p>
+                    </div>
+                    <iframe id="pdf-iframe" src="" loading="lazy" class="absolute inset-0 w-full h-full border-0" title="Visor de PDF" onload="hideIframeLoader('pdf-loader')"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL APP DE DIBUJO (SUMO PAINT)
+         ========================================== -->
+    <div id="drawing-app-modal" class="fixed top-20 left-0 right-0 bottom-0 bg-white z-[80] modal-overlay flex justify-center items-center p-0 overflow-hidden">
+        <div class="w-full h-full flex flex-col modal-content relative overflow-hidden bg-gray-100">
+            <div class="bg-white px-4 md:px-8 py-2 md:py-3 flex justify-between items-center shrink-0 border-b border-gray-200 shadow-sm z-10">
+                <h3 class="font-heading font-bold text-sm md:text-base flex items-center gap-2 text-pola-blue uppercase tracking-widest">✏️ Dibuja</h3>
+                <button onclick="closeDrawingApp()" class="w-8 h-8 md:w-10 md:h-10 bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-500 rounded-full flex items-center justify-center transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="flex-1 w-full bg-gray-200 relative overflow-hidden">
+                <div id="drawing-app-loader" class="iframe-loader">
+                    <div class="loading-spinner"></div>
+                    <p class="text-pola-dark text-xs font-black uppercase tracking-widest">Cargando herramienta de dibujo...</p>
+                </div>
+                <iframe id="drawing-app-iframe" data-src="https://paint.sumo.app/" src="about:blank" loading="lazy" class="absolute inset-0 w-full h-full border-0" title="Herramienta de dibujo" allow="clipboard-read; clipboard-write; fullscreen" allowfullscreen onload="hideIframeLoader('drawing-app-loader')"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL DE PROYECTOS INSPIRADORES
+         ========================================== -->
+    <div id="project-modal" class="fixed inset-0 bg-pola-dark/80 backdrop-blur-md z-[100] modal-overlay flex justify-center items-center p-0 overflow-hidden">
+        <div class="w-full h-full flex flex-col modal-content relative overflow-y-auto bg-white scroll-smooth">
+            <button onclick="closeProjectModal()" class="fixed top-6 right-6 w-12 h-12 bg-black/50 hover:bg-red-500 text-white rounded-full shadow-xl flex items-center justify-center z-[110] transition-all backdrop-blur-md border border-white/20">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div class="fixed top-6 left-6 z-[110] flex flex-col md:flex-row gap-3">
+                <button id="tts-btn" class="glass-btn bg-black/50 text-white px-5 py-3 rounded-xl text-sm font-black tracking-widest uppercase flex items-center gap-2 shadow-lg hover:bg-white/30">
+                    <span id="tts-icon" class="text-xl">🔊</span> <span id="tts-label">Pausar Relato</span>
+                </button>
+            </div>
+            <div id="modal-body" class="w-full flex flex-col relative pb-0"></div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL DE VIDEO (ARTISTAS)
+         ========================================== -->
+    <div id="video-modal" class="fixed inset-0 bg-pola-dark/80 backdrop-blur-[15px] z-[110] modal-overlay flex justify-center items-center p-4 md:p-8 overflow-hidden">
+        <div class="bg-black rounded-[2rem] w-full max-w-5xl flex flex-col modal-content shadow-2xl relative overflow-hidden border border-white/20">
+            <div class="bg-pola-dark p-4 md:p-6 flex justify-between items-center text-white shrink-0 border-b-4 border-pola-yellow">
+                <h3 id="video-modal-title" class="font-heading font-black text-2xl flex items-center gap-3">
+                    <span class="text-3xl">👨‍🎨</span> Entrevista al Artista
+                </h3>
+                <button onclick="closeVideoModal()" class="w-10 h-10 bg-white/10 hover:bg-red-500 rounded-full flex items-center justify-center transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="w-full aspect-video bg-black relative">
+                <iframe id="video-modal-iframe" class="absolute inset-0 w-full h-full" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL GUÍA ESCALA A MANO
+         ========================================== -->
+    <div id="guide-modal-escala" class="fixed inset-0 bg-green-900/95 backdrop-blur-md z-[110] modal-overlay flex justify-center items-center p-4">
+        <div class="bg-white rounded-[3rem] w-full max-w-5xl modal-content shadow-2xl relative p-6 md:p-12 border-8 border-pola-dark max-h-[95vh] overflow-y-auto text-left">
+            <button onclick="closeModal('guide-modal-escala')" class="absolute top-4 right-4 md:top-6 md:right-6 w-12 h-12 bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-500 rounded-full flex items-center justify-center transition-colors shadow-sm">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            
+            <div class="flex flex-col md:flex-row items-center md:items-start gap-4 mb-8 border-b-2 border-gray-100 pb-6 pt-8 md:pt-0 text-center md:text-left">
+                <div class="w-20 h-20 bg-green-500 rounded-[2rem] flex items-center justify-center text-4xl shadow-lg text-white shrink-0 transform -rotate-3">📏</div>
+                <div>
+                    <span class="text-green-600 font-black tracking-widest uppercase text-xs">Guía de Ejercicio Práctico</span>
+                    <h2 class="text-3xl md:text-4xl font-heading font-black text-pola-dark mt-1">Ampliación con Cuadrícula</h2>
+                </div>
+            </div>
+            
+            <div class="flex flex-col lg:flex-row gap-8 items-start">
+                <div class="lg:w-1/2">
+                    <div class="mb-6">
+                        <h3 class="font-bold text-xl text-pola-dark mb-3 flex items-center gap-2"><span class="text-2xl">🧠</span> ¿Qué es y para qué sirve?</h3>
+                        <p class="text-gray-600 font-medium leading-relaxed">En el muralismo, pasar un dibujo pequeño a una pared gigante sin que se deforme es uno de los mayores retos. Usamos la <strong>técnica de la cuadrícula</strong>.</p>
+                    </div>
+                    <div class="bg-green-50 p-6 md:p-8 rounded-[2rem] border border-green-200 shadow-inner">
+                        <h3 class="font-bold text-lg text-green-800 mb-4">📍 Paso a Paso de la Misión:</h3>
+                        <ol class="list-decimal list-inside space-y-4 text-green-900 font-medium text-sm md:text-base">
+                            <li><strong>Prepara tu lienzo:</strong> Toma una hoja, lápiz, regla y borrador.</li>
+                            <li><strong>Traza tu cuadrícula:</strong> Dibuja una cuadrícula vacía en tu hoja. Mismos cuadros que la referencia, pero más grandes.</li>
+                            <li><strong>Copia cuadro por cuadro:</strong> Enfócate en un solo cuadrito. Observa la línea y replícala.</li>
+                            <li><strong>Finaliza el trazo:</strong> No es necesario colorear, domina la proporción.</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <div class="lg:w-1/2 w-full bg-gray-100 p-4 md:p-6 rounded-[2.5rem] border-4 border-gray-200 text-center shadow-inner mt-4 lg:mt-0">
+                    <span class="block font-bold text-gray-500 uppercase tracking-widest text-xs mb-4">Imagen de Referencia</span>
+                    <img src="https://github.com/novaleroso1-boop/musicas-tradicionales/blob/main/cuadricula.jpg?raw=true" alt="Cuadrícula para dibujar un gato" class="w-full max-w-sm mx-auto rounded-xl shadow-md border border-gray-300 bg-white">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL GUÍA CONCEPTUALIZACIÓN
+         ========================================== -->
+    <div id="guide-modal-concepto" class="fixed inset-0 bg-yellow-900/95 backdrop-blur-md z-[110] modal-overlay flex justify-center items-center p-4 md:p-8">
+        <div class="bg-white rounded-[3rem] w-full max-w-6xl modal-content shadow-2xl relative p-6 md:p-12 border-8 border-pola-yellow max-h-[95vh] overflow-y-auto text-left">
+            <button onclick="closeModal('guide-modal-concepto')" class="absolute top-4 right-4 md:top-6 md:right-6 w-12 h-12 bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-500 rounded-full flex items-center justify-center transition-colors shadow-sm z-50">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            
+            <div class="text-center mb-10 mt-6 md:mt-0">
+                <span class="inline-block bg-pola-yellow text-pola-dark px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-3 shadow-sm">Paso a Paso de Diseño</span>
+                <h2 class="text-4xl md:text-5xl font-heading font-black text-pola-dark mb-4">De la Historia a la Imagen</h2>
+                <p class="text-gray-600 text-lg font-medium max-w-3xl mx-auto">
+                    Toda gran ilustración conceptual empieza con un <strong>porqué</strong>. Los muralistas somos como detectives visuales: investigamos una historia, encontramos pistas y armamos el caso en una imagen monumental.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <!-- Paso 1 -->
+                <div class="bg-gray-50 rounded-[2rem] p-6 border border-gray-200 relative pt-12 shadow-sm">
+                    <div class="absolute -top-6 left-6 w-14 h-14 bg-pola-dark text-white rounded-full flex items-center justify-center font-black text-xl shadow-lg border-4 border-white">1</div>
+                    <h3 class="font-heading font-black text-xl text-pola-dark mb-3">Descubrir la Historia</h3>
+                    <p class="text-sm text-gray-600 leading-relaxed mb-4">¿Qué vamos a contar? Un mito, un héroe local o un problema del barrio.</p>
+                </div>
+                <!-- Paso 2 -->
+                <div class="bg-gray-50 rounded-[2rem] p-6 border border-gray-200 relative pt-12 shadow-sm">
+                    <div class="absolute -top-6 left-6 w-14 h-14 bg-pola-dark text-white rounded-full flex items-center justify-center font-black text-xl shadow-lg border-4 border-white">2</div>
+                    <h3 class="font-heading font-black text-xl text-pola-dark mb-3">Cacería de Elementos</h3>
+                    <p class="text-sm text-gray-600 leading-relaxed mb-4">Resume la historia sacando objetos y conceptos clave.</p>
+                </div>
+                <!-- Paso 3 -->
+                <div class="bg-gray-50 rounded-[2rem] p-6 border border-gray-200 relative pt-12 shadow-sm">
+                    <div class="absolute -top-6 left-6 w-14 h-14 bg-pola-dark text-white rounded-full flex items-center justify-center font-black text-xl shadow-lg border-4 border-white">3</div>
+                    <h3 class="font-heading font-black text-xl text-pola-dark mb-3">El Moodboard</h3>
+                    <p class="text-sm text-gray-600 leading-relaxed mb-4">Crea un tablero de inspiración. Tu mente necesita referencias visuales.</p>
+                </div>
+                <!-- Paso 4 -->
+                <div class="bg-pola-yellow rounded-[2rem] p-6 border border-yellow-400 relative pt-12 shadow-md">
+                    <div class="absolute -top-6 left-6 w-14 h-14 bg-pola-dark text-white rounded-full flex items-center justify-center font-black text-xl shadow-lg border-4 border-white">4</div>
+                    <h3 class="font-heading font-black text-xl text-pola-dark mb-3">Valor Simbólico</h3>
+                    <p class="text-sm text-pola-dark/80 leading-relaxed mb-4 font-medium">Juega con tamaños y mezcla cosas para crear nuevos significados.</p>
+                </div>
+            </div>
+
+            <div class="bg-pola-dark rounded-[2.5rem] p-8 md:p-10 text-white shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center gap-8 border-4 border-pola-dark">
+                <div class="md:w-1/3 shrink-0 text-center md:text-left relative z-10">
+                    <div class="text-7xl mb-4">🎯</div>
+                    <h3 class="font-heading font-black text-3xl mb-2 text-pola-yellow">Tu Misión de Hoy</h3>
+                    <p class="text-gray-300 text-sm font-medium">Aplica estos 4 pasos y crea tu propia ilustración conceptual.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL JUEGO CUADRICULA
+         ========================================== -->
     <div id="grid-modal" class="fixed inset-0 bg-blue-900/95 backdrop-blur-md z-[110] modal-overlay flex justify-center items-center p-4">
         <div class="bg-white rounded-[3rem] w-full max-w-5xl modal-content shadow-2xl relative p-6 md:p-10 border-8 border-pola-dark flex flex-col max-h-[95vh] overflow-y-auto">
             <button onclick="closeModal('grid-modal')" class="absolute top-4 right-4 md:top-6 md:right-6 w-10 h-10 md:w-12 md:h-12 bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-500 rounded-full flex items-center justify-center transition-colors z-50 shadow-md">
@@ -730,7 +728,7 @@
                 <span class="inline-block bg-pola-blue text-white rounded-full px-3 py-1 text-[0.65rem] font-black tracking-widest uppercase mb-2">Taller Práctico</span>
                 <h2 class="text-3xl md:text-4xl font-heading font-black text-pola-dark mb-3">El Arte de la Cuadrícula</h2>
                 <p class="text-gray-600 text-sm md:text-base font-medium leading-relaxed bg-gray-50 p-4 rounded-2xl border border-gray-200">
-                    Una cuadrícula es un conjunto de líneas verticales y horizontales que nos permiten dividir una imagen en secciones más pequeñas. Esta técnica es fundamental en el muralismo para ampliar bocetos al muro manteniendo la proporción perfecta. <strong class="text-pola-blue">Misión: Usa la paleta de colores y la cuadrícula numerada para copiar la imagen de muestra paso a paso en tu muro.</strong>
+                    Misión: Usa la paleta de colores y la cuadrícula numerada para copiar la imagen de muestra paso a paso en tu muro.
                 </p>
             </div>
             
@@ -741,8 +739,7 @@
                         <div id="target-labels-y" class="flex flex-col gap-[1px] md:gap-[2px] py-1 md:py-2 pr-1 md:pr-2 text-[10px] md:text-xs font-bold text-gray-400 text-right"></div>
                         <div>
                             <div id="target-labels-x" class="grid grid-cols-12 gap-[1px] md:gap-[2px] px-1 md:px-2 pb-1 text-[10px] md:text-xs font-bold text-gray-400 text-center"></div>
-                            <div id="target-grid" class="grid grid-cols-12 gap-[1px] md:gap-[2px] bg-gray-300 p-1 md:p-2 rounded-xl shadow-inner border-2 border-gray-200">
-                            </div>
+                            <div id="target-grid" class="grid grid-cols-12 gap-[1px] md:gap-[2px] bg-gray-300 p-1 md:p-2 rounded-xl shadow-inner border-2 border-gray-200"></div>
                         </div>
                     </div>
                 </div>
@@ -756,8 +753,7 @@
                         <div id="player-labels-y" class="flex flex-col gap-[1px] md:gap-[2px] py-1 md:py-2 pr-1 md:pr-2 text-[10px] md:text-xs font-bold text-gray-400 text-right"></div>
                         <div>
                             <div id="player-labels-x" class="grid grid-cols-12 gap-[1px] md:gap-[2px] px-1 md:px-2 pb-1 text-[10px] md:text-xs font-bold text-gray-400 text-center"></div>
-                            <div id="player-grid" class="grid grid-cols-12 gap-[1px] md:gap-[2px] bg-gray-300 p-1 md:p-2 rounded-xl shadow-inner border-2 border-pola-blue relative cursor-crosshair">
-                            </div>
+                            <div id="player-grid" class="grid grid-cols-12 gap-[1px] md:gap-[2px] bg-gray-300 p-1 md:p-2 rounded-xl shadow-inner border-2 border-pola-blue relative cursor-crosshair"></div>
                         </div>
                     </div>
                 </div>
@@ -786,7 +782,9 @@
         </div>
     </div>
 
-    <!-- 3. MODAL CANVAS (Pizarra) -->
+    <!-- ==========================================
+         MODAL CANVAS (Pizarra)
+         ========================================== -->
     <div id="canvas-modal" class="fixed inset-0 bg-yellow-900/95 backdrop-blur-md z-[110] modal-overlay flex justify-center items-center p-4 md:p-8">
         <div class="bg-white rounded-[2rem] w-full h-full max-h-[90vh] max-w-5xl modal-content shadow-2xl relative flex flex-col overflow-hidden">
             <div class="bg-pola-dark p-4 md:p-6 flex justify-between items-center text-white shrink-0 border-b-4 border-pola-yellow">
@@ -812,284 +810,84 @@
         </div>
     </div>
 
-    <!-- 4. MODAL UPLOAD (Evidencias Manuales) -->
-    <div id="upload-modal" class="fixed inset-0 bg-pola-dark/95 backdrop-blur-md z-[110] modal-overlay flex justify-center items-center p-4">
-        <div class="bg-white rounded-[3rem] w-full max-w-2xl modal-content shadow-2xl relative p-8 md:p-12 text-center border-4 border-white/20">
-            <button onclick="closeModal('upload-modal')" class="absolute top-6 right-6 w-12 h-12 bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-500 rounded-full flex items-center justify-center transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-            <div id="upload-icon" class="w-20 h-20 bg-pola-yellow rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-xl text-pola-dark -rotate-6">📸</div>
-            <h2 id="upload-title" class="text-3xl font-heading font-black text-pola-dark mb-4">Evidencia Práctica</h2>
-            <p id="upload-desc" class="text-gray-600 font-medium mb-8 text-sm md:text-base">Instrucciones...</p>
-            
-            <div class="bg-gray-50 border-4 border-dashed border-gray-300 rounded-3xl p-10 text-center hover:bg-pola-yellow/20 hover:border-pola-yellow transition-colors cursor-pointer group">
-                <svg class="w-12 h-12 text-gray-400 group-hover:text-pola-dark mx-auto mb-4 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                <p class="text-gray-500 font-bold text-sm">Toca para abrir cámara o galería</p>
-            </div>
-            
-            <button onclick="alert('¡Evidencia subida con éxito!'); closeModal('upload-modal')" class="w-full mt-6 bg-pola-dark text-white font-black py-4 rounded-2xl uppercase tracking-widest hover:bg-pola-blue transition-colors text-sm shadow-xl">Confirmar y Enviar</button>
-        </div>
-    </div>
-
-    <!-- 5. MODAL GUÍA: DIBUJO TÉCNICO (Escala a Mano) -->
-    <div id="guide-modal-escala" class="fixed inset-0 bg-green-900/95 backdrop-blur-md z-[110] modal-overlay flex justify-center items-center p-4">
-        <div class="bg-white rounded-[3rem] w-full max-w-5xl modal-content shadow-2xl relative p-6 md:p-12 border-8 border-pola-dark max-h-[95vh] overflow-y-auto text-left">
-            <button onclick="closeModal('guide-modal-escala')" class="absolute top-4 right-4 md:top-6 md:right-6 w-12 h-12 bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-500 rounded-full flex items-center justify-center transition-colors shadow-sm">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-            
-            <div class="flex flex-col md:flex-row items-center md:items-start gap-4 mb-8 border-b-2 border-gray-100 pb-6 pt-8 md:pt-0 text-center md:text-left">
-                <div class="w-20 h-20 bg-green-500 rounded-[2rem] flex items-center justify-center text-4xl shadow-lg text-white shrink-0 transform -rotate-3">📏</div>
-                <div>
-                    <span class="text-green-600 font-black tracking-widest uppercase text-xs">Guía de Ejercicio Práctico</span>
-                    <h2 class="text-3xl md:text-4xl font-heading font-black text-pola-dark mt-1">Ampliación con Cuadrícula</h2>
-                </div>
-            </div>
-            
-            <div class="flex flex-col lg:flex-row gap-8 items-start">
-                <div class="lg:w-1/2">
-                    <div class="mb-6">
-                        <h3 class="font-bold text-xl text-pola-dark mb-3 flex items-center gap-2"><span class="text-2xl">🧠</span> ¿Qué es y para qué sirve?</h3>
-                        <p class="text-gray-600 font-medium leading-relaxed">
-                            En el muralismo, pasar un dibujo pequeño (boceto) a una pared gigante sin que se deforme es uno de los mayores retos. Para lograrlo con precisión matemática, los artistas usan la <strong>técnica de la cuadrícula</strong>. Consiste en dibujar una red de líneas sobre la imagen original y otra red, con la misma cantidad de cuadros pero proporcionalmente más grande, sobre el muro.
-                        </p>
-                    </div>
-                    
-                    <div class="bg-green-50 p-6 md:p-8 rounded-[2rem] border border-green-200 shadow-inner">
-                        <h3 class="font-bold text-lg text-green-800 mb-4">📍 Paso a Paso de la Misión:</h3>
-                        <ol class="list-decimal list-inside space-y-4 text-green-900 font-medium text-sm md:text-base">
-                            <li><strong>Prepara tu lienzo:</strong> Toma una hoja de papel en blanco, lápiz, regla y borrador.</li>
-                            <li><strong>Traza tu cuadrícula:</strong> Dibuja una cuadrícula vacía en tu hoja. Asegúrate de que tenga la misma cantidad de cuadros (columnas y filas) que la imagen de referencia. Haz que tus cuadros sean más grandes (ej. 2x2 cm o 3x3 cm) para ampliar el dibujo.</li>
-                            <li><strong>Copia cuadro por cuadro:</strong> ¡El secreto es no mirar el dibujo completo! Enfócate en un solo cuadrito. Observa por dónde entra y sale la línea del lápiz, y replícalo en tu hoja.</li>
-                            <li><strong>Finaliza el trazo:</strong> Este es un ejercicio de dibujo técnico, así que <strong>no es necesario colorear ni rellenar</strong>. El objetivo es dominar la línea y la proporción.</li>
-                        </ol>
-                    </div>
-                </div>
-                
-                <div class="lg:w-1/2 w-full bg-gray-100 p-4 md:p-6 rounded-[2.5rem] border-4 border-gray-200 text-center shadow-inner mt-4 lg:mt-0">
-                    <span class="block font-bold text-gray-500 uppercase tracking-widest text-xs mb-4">Imagen de Referencia</span>
-                    <img src="https://github.com/novaleroso1-boop/musicas-tradicionales/blob/main/cuadricula.jpg?raw=true" alt="Cuadrícula para dibujar un gato" class="w-full max-w-sm mx-auto rounded-xl shadow-md border border-gray-300 bg-white">
-                    <p class="text-xs text-gray-500 mt-4 font-bold uppercase tracking-wide">Mantén esta pantalla abierta para guiarte.</p>
-                </div>
-            </div>
-            
-            <div class="mt-10 text-center border-t-2 border-gray-100 pt-8">
-                <button onclick="closeModal('guide-modal-escala')" class="bg-pola-dark text-white font-black px-10 py-4 rounded-2xl uppercase tracking-widest hover:bg-green-500 transition-colors text-lg shadow-xl hover:-translate-y-1 transform">
-                    ¡Entendido, a dibujar! ✏️
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 6. MODAL GUÍA: CONCEPTUALIZACIÓN (De la Historia a la Imagen) -->
-    <div id="guide-modal-concepto" class="fixed inset-0 bg-yellow-900/95 backdrop-blur-md z-[110] modal-overlay flex justify-center items-center p-4 md:p-8">
-        <div class="bg-white rounded-[3rem] w-full max-w-6xl modal-content shadow-2xl relative p-6 md:p-12 border-8 border-pola-yellow max-h-[95vh] overflow-y-auto text-left">
-            <button onclick="closeModal('guide-modal-concepto')" class="absolute top-4 right-4 md:top-6 md:right-6 w-12 h-12 bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-500 rounded-full flex items-center justify-center transition-colors shadow-sm z-50">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-            
-            <div class="text-center mb-10 mt-6 md:mt-0">
-                <span class="inline-block bg-pola-yellow text-pola-dark px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-3 shadow-sm">Paso a Paso de Diseño</span>
-                <h2 class="text-4xl md:text-5xl font-heading font-black text-pola-dark mb-4">De la Historia a la Imagen</h2>
-                <p class="text-gray-600 text-lg font-medium max-w-3xl mx-auto">
-                    Toda gran ilustración conceptual empieza con un <strong>porqué</strong>. Los muralistas somos como detectives visuales: investigamos una historia, encontramos pistas (símbolos) y armamos el caso en una sola imagen monumental.
-                </p>
-            </div>
-
-            <!-- Grilla de Pasos -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                
-                <!-- Paso 1 -->
-                <div class="bg-gray-50 rounded-[2rem] p-6 border border-gray-200 relative pt-12 shadow-sm">
-                    <div class="absolute -top-6 left-6 w-14 h-14 bg-pola-dark text-white rounded-full flex items-center justify-center font-black text-xl shadow-lg border-4 border-white">1</div>
-                    <h3 class="font-heading font-black text-xl text-pola-dark mb-3">Descubrir la Historia</h3>
-                    <p class="text-sm text-gray-600 leading-relaxed mb-4">¿Qué vamos a contar? Un mito, un héroe local o un problema del barrio.</p>
-                    <div class="bg-white p-4 rounded-xl text-xs font-medium text-gray-500 italic border-l-4 border-pola-yellow shadow-inner">
-                        <strong>Ejemplo:</strong> Camilo Daza. El cielo era un misterio y viajar tomaba semanas. Él se obsesionó con volar, compró un avión y decidió conquistar los Andes. ✈️
-                    </div>
-                </div>
-
-                <!-- Paso 2 -->
-                <div class="bg-gray-50 rounded-[2rem] p-6 border border-gray-200 relative pt-12 shadow-sm">
-                    <div class="absolute -top-6 left-6 w-14 h-14 bg-pola-dark text-white rounded-full flex items-center justify-center font-black text-xl shadow-lg border-4 border-white">2</div>
-                    <h3 class="font-heading font-black text-xl text-pola-dark mb-3">Cacería de Elementos</h3>
-                    <p class="text-sm text-gray-600 leading-relaxed mb-4">Resume la historia sacando objetos y conceptos clave para no dibujar algo literal.</p>
-                    <ul class="text-xs font-medium text-gray-600 space-y-2 bg-white p-3 rounded-xl shadow-inner border border-gray-100">
-                        <li><strong>😎 Personaje:</strong> Gafas, casco de cuero, bigote.</li>
-                        <li><strong>🛩️ Objeto:</strong> Biplano antiguo.</li>
-                        <li><strong>🏔️ Entorno:</strong> Montañas, mapa antiguo.</li>
-                        <li><strong>🌟 Concepto:</strong> Valentía, libertad.</li>
-                    </ul>
-                </div>
-
-                <!-- Paso 3 -->
-                <div class="bg-gray-50 rounded-[2rem] p-6 border border-gray-200 relative pt-12 shadow-sm">
-                    <div class="absolute -top-6 left-6 w-14 h-14 bg-pola-dark text-white rounded-full flex items-center justify-center font-black text-xl shadow-lg border-4 border-white">3</div>
-                    <h3 class="font-heading font-black text-xl text-pola-dark mb-3">El Moodboard</h3>
-                    <p class="text-sm text-gray-600 leading-relaxed mb-4">Crea un tablero de inspiración. Tu mente necesita referencias visuales de la vida real para guiarte.</p>
-                    <div class="flex gap-2 bg-white p-2 rounded-xl shadow-inner">
-                        <div class="w-1/3 h-16 bg-gray-200 rounded-lg bg-[url('https://images.unsplash.com/photo-1541410965313-d53b3c16ef17?auto=format&fit=crop&w=100&q=80')] bg-cover opacity-80"></div>
-                        <div class="w-1/3 h-16 bg-gray-200 rounded-lg bg-[url('https://images.unsplash.com/photo-1584043254580-c1e089204052?auto=format&fit=crop&w=100&q=80')] bg-cover opacity-80"></div>
-                        <div class="w-1/3 h-16 bg-gray-200 rounded-lg bg-[url('https://images.unsplash.com/photo-1534067783941-51c9c23ecefd?auto=format&fit=crop&w=100&q=80')] bg-cover opacity-80"></div>
-                    </div>
-                </div>
-
-                <!-- Paso 4 -->
-                <div class="bg-pola-yellow rounded-[2rem] p-6 border border-yellow-400 relative pt-12 shadow-md">
-                    <div class="absolute -top-6 left-6 w-14 h-14 bg-pola-dark text-white rounded-full flex items-center justify-center font-black text-xl shadow-lg border-4 border-white">4</div>
-                    <h3 class="font-heading font-black text-xl text-pola-dark mb-3">Valor Simbólico</h3>
-                    <p class="text-sm text-pola-dark/80 leading-relaxed mb-4 font-medium">La magia conceptual. Juega con tamaños y mezcla cosas para crear nuevos significados.</p>
-                    <div class="bg-white/60 p-3 rounded-xl text-xs font-bold text-pola-dark shadow-inner space-y-2">
-                        <p>🔹 <span class="text-pola-blue">Metáfora 1:</span> Gafas gigantes donde el cristal refleja el avión sobre el valle.</p>
-                        <p>🔹 <span class="text-pola-blue">Metáfora 2:</span> El bigote se transforma en las alas del avión.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Misión Destacada (Paso 5) -->
-            <div class="bg-pola-dark rounded-[2.5rem] p-8 md:p-10 text-white shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center gap-8 border-4 border-pola-dark">
-                <div class="absolute -top-20 -right-20 w-64 h-64 bg-pola-blue opacity-40 rounded-full blur-[60px] pointer-events-none"></div>
-                <div class="md:w-1/3 shrink-0 text-center md:text-left relative z-10">
-                    <div class="text-7xl mb-4">🎯</div>
-                    <h3 class="font-heading font-black text-3xl mb-2 text-pola-yellow">Tu Misión de Hoy</h3>
-                    <p class="text-gray-300 text-sm font-medium">Aplica estos 5 pasos y crea tu propia ilustración conceptual. ¡Conviértete en un muralista visual!</p>
-                </div>
-                <div class="md:w-2/3 w-full bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 relative z-10">
-                    <ul class="space-y-4 text-sm font-bold text-blue-50">
-                        <li class="flex gap-3"><span class="bg-pola-yellow text-pola-dark w-6 h-6 rounded-full flex items-center justify-center shrink-0">1</span> <span><strong>Elige tu tema:</strong> (Medio ambiente, identidad, historia de la región).</span></li>
-                        <li class="flex gap-3"><span class="bg-pola-yellow text-pola-dark w-6 h-6 rounded-full flex items-center justify-center shrink-0">2</span> <span><strong>Escribe 3 líneas:</strong> ¿Qué quieres contar sobre eso en específico?</span></li>
-                        <li class="flex gap-3"><span class="bg-pola-yellow text-pola-dark w-6 h-6 rounded-full flex items-center justify-center shrink-0">3</span> <span><strong>Haz tu lista:</strong> Saca 5 elementos visuales que representen esa historia.</span></li>
-                        <li class="flex gap-3"><span class="bg-pola-yellow text-pola-dark w-6 h-6 rounded-full flex items-center justify-center shrink-0">4</span> <span><strong>Busca referencias:</strong> Crea tu propio moodboard rápido (imágenes de guía).</span></li>
-                        <li class="flex gap-3"><span class="bg-pola-yellow text-pola-dark w-6 h-6 rounded-full flex items-center justify-center shrink-0">5</span> <span><strong>Crea el concepto y Boceta:</strong> Mezcla dos elementos de forma creativa (juega con el tamaño o únelos) y empieza a dibujar tu idea en papel.</span></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="text-center mt-8">
-                <button onclick="closeModal('guide-modal-concepto')" class="bg-pola-yellow text-pola-dark font-black px-10 py-4 rounded-2xl uppercase tracking-widest hover:bg-pola-dark hover:text-white transition-colors text-sm md:text-base shadow-xl">
-                    Cerrar Guía
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 7. MODAL JUEGO COMPOSICIÓN (IFRAME) -->
-    <div id="composition-modal" class="fixed inset-0 bg-green-900/95 backdrop-blur-md z-[110] modal-overlay flex justify-center items-center p-4 md:p-8">
-        <div class="bg-white rounded-[2rem] w-full h-full max-h-[90vh] max-w-5xl modal-content shadow-2xl relative flex flex-col overflow-hidden">
-            <div class="bg-pola-dark p-4 md:p-6 flex justify-between items-center text-white shrink-0 border-b-4 border-green-400">
-                <div>
-                    <h3 class="font-heading font-black text-2xl flex items-center gap-3">⚖️ Juego de Composición</h3>
-                    <p class="text-gray-400 text-xs md:text-sm mt-1">Aprende a identificar, nivelar y equilibrar los elementos visuales.</p>
-                </div>
-                <button onclick="closeModal('composition-modal')" class="w-10 h-10 bg-white/10 hover:bg-red-500 rounded-full flex items-center justify-center transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            
-            <div class="bg-green-50 border-b border-green-200 p-3 md:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
-                <p class="text-xs md:text-sm text-green-800 font-medium text-center sm:text-left">
-                    🎮 <strong>¡Juega directamente aquí!</strong> Si prefieres más espacio, puedes abrirlo en pantalla completa.
-                </p>
-                <a href="https://novaleroso1-boop.github.io/juego/" target="_blank" class="bg-pola-dark text-white text-xs md:text-sm font-black px-6 py-2.5 rounded-xl uppercase tracking-wider hover:bg-green-600 transition-colors shadow-md whitespace-nowrap flex items-center gap-2">
-                    Pantalla Completa 🚀
-                </a>
-            </div>
-
-            <div class="flex-1 bg-gray-100 relative overflow-hidden">
-                <iframe src="https://novaleroso1-boop.github.io/juego/" class="absolute inset-0 w-full h-full border-0" allowfullscreen></iframe>
-            </div>
-        </div>
-    </div>
-
-    <!-- ==========================================
-         8. MODAL PADLET (MURO DE ACTIVIDADES) - SUB-PANTALLA
-         ========================================== -->
-    <div id="padlet-modal" class="fixed top-20 left-0 right-0 bottom-0 bg-white z-40 modal-overlay flex justify-center items-center p-0 overflow-hidden">
-        <div class="w-full h-full flex flex-col modal-content relative overflow-hidden bg-gray-100">
-            <!-- Barra de título pequeña (Sub-encabezado blanco) -->
-            <div class="bg-white px-4 md:px-8 py-2 md:py-3 flex justify-between items-center shrink-0 border-b border-gray-200 shadow-sm z-10">
-                <h3 class="font-heading font-bold text-sm md:text-base flex items-center gap-2 text-pola-blue uppercase tracking-widest">
-                    📌 Muro de Actividades
-                </h3>
-                <button onclick="closeModal('padlet-modal')" class="w-8 h-8 bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-500 rounded-full flex items-center justify-center transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            
-            <div class="flex-1 w-full bg-gray-200 relative overflow-hidden">
-                <!-- CÓDIGO PADLET INSERTADO Y AJUSTADO A ALTURA COMPLETA (100%) -->
-                <div class="padlet-embed" style="border:none;box-sizing:border-box;overflow:hidden;position:relative;width:100%;height:100%;background:#F4F4F4">
-                    <p style="padding:0;margin:0;height:100%;">
-                        <iframe src="https://padlet.com/embed/7o549bbpcop2fgme" frameborder="0" allow="camera;microphone;geolocation;display-capture;clipboard-write" style="width:100%;height:100%;display:block;padding:0;margin:0"></iframe>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ==========================================
-         NUEVO: MODAL VISOR DE PDF (TALLERES) - SUB-PANTALLA
-         ========================================== -->
-    <div id="pdf-modal" class="fixed top-20 left-0 right-0 bottom-0 bg-white z-40 modal-overlay flex justify-center items-center p-0 overflow-hidden">
-        <div class="w-full h-full flex flex-col modal-content relative overflow-hidden bg-gray-100">
-            <!-- Barra de título pequeña (Sub-encabezado blanco) -->
-            <div class="bg-white px-4 md:px-8 py-2 md:py-3 flex justify-between items-center shrink-0 border-b border-gray-200 shadow-sm z-10">
-                <h3 id="pdf-modal-title" class="font-heading font-bold text-sm md:text-base flex items-center gap-2 text-pola-blue uppercase tracking-widest">
-                    📚 Taller
-                </h3>
-                <button onclick="closePdfModal()" class="w-8 h-8 bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-500 rounded-full flex items-center justify-center transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            
-            <div class="flex-1 w-full relative overflow-hidden">
-                <iframe id="pdf-iframe" src="" class="absolute inset-0 w-full h-full border-0" title="Visor de PDF"></iframe>
-            </div>
-        </div>
-    </div>
-
-    <!-- ==========================================
-         MODAL DE PROYECTOS INSPIRADORES
-         ========================================== -->
-    <div id="project-modal" class="fixed inset-0 bg-pola-dark/30 backdrop-blur-[20px] z-[100] modal-overlay flex justify-center items-center p-2 md:p-6 overflow-hidden">
-        <div class="bg-black rounded-[2rem] md:rounded-[3rem] w-full max-w-6xl h-[95vh] md:h-[90vh] flex flex-col modal-content shadow-2xl relative overflow-hidden border border-white/10">
-            <button onclick="closeProjectModal()" class="absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-red-500 text-white rounded-full shadow-xl flex items-center justify-center z-50 transition-all backdrop-blur-md border border-white/20">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-            <div class="absolute top-6 left-6 z-50 flex flex-col md:flex-row gap-3">
-                <button id="tts-btn" class="glass-btn text-white px-5 py-3 rounded-xl text-sm font-black tracking-widest uppercase flex items-center gap-2 shadow-lg hover:bg-white/30">
-                    <span id="tts-icon" class="text-xl">🔊</span> <span id="tts-label">Pausar Relato</span>
-                </button>
-                <button id="show-text-btn" onclick="toggleImmersiveMode()" class="glass-btn text-white px-5 py-3 rounded-xl text-sm font-black tracking-widest uppercase shadow-lg flex items-center gap-2 hover:bg-white hover:text-pola-dark">
-                    📖 Leer Relato
-                </button>
-            </div>
-            <div id="modal-body" class="flex-1 w-full flex flex-col relative overflow-hidden"></div>
-        </div>
-    </div>
-
-    <!-- ==========================================
-         MODAL DE VIDEO (ARTISTAS)
-         ========================================== -->
-    <div id="video-modal" class="fixed inset-0 bg-pola-dark/80 backdrop-blur-[15px] z-[110] modal-overlay flex justify-center items-center p-4 md:p-8 overflow-hidden">
-        <div class="bg-black rounded-[2rem] w-full max-w-5xl flex flex-col modal-content shadow-2xl relative overflow-hidden border border-white/20">
-            <div class="bg-pola-dark p-4 md:p-6 flex justify-between items-center text-white shrink-0 border-b-4 border-pola-yellow">
-                <h3 id="video-modal-title" class="font-heading font-black text-2xl flex items-center gap-3">
-                    <span class="text-3xl">👨‍🎨</span> Entrevista al Artista
-                </h3>
-                <button onclick="closeVideoModal()" class="w-10 h-10 bg-white/10 hover:bg-red-500 rounded-full flex items-center justify-center transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            <div class="w-full aspect-video bg-black relative">
-                <iframe id="video-modal-iframe" class="absolute inset-0 w-full h-full" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-            </div>
-        </div>
-    </div>
-
-    <!-- SCRIPT PRINCIPAL Y LÓGICA DE JUEGOS -->
+    <!-- SCRIPT PRINCIPAL Y LÓGICA -->
     <script>
-        // 1. DATA DE PROYECTOS 
+        const workshopsList = [
+            { url: 'https://drive.google.com/file/d/14bgSMwrX-R5qaEzgXHprHhNC2ZN0T0CB/view?usp=sharing', title: 'Taller 1: Teoría del Color' },
+            { url: 'https://drive.google.com/file/d/1VYMvgrLQrrHkVTT0OtKqVInv8tCAY_ft/view', title: 'Taller 2: Composición Visual' },
+            { url: 'https://drive.google.com/file/d/1kiCARUyAkxoDiJPlYbny5AVPVxbpGAEo/view', title: 'Taller 3: Conceptualización' },
+            { url: 'https://drive.google.com/file/d/1aU2MU1uiUcDhwpXhTyAyj3yYmRJIRdRT/view', title: 'Taller 4: Trazado y Escala' }
+        ];
+        let currentWorkshopIndex = -1;
+
+        // 1. Cierra absolutamente todas las ventanas activas
+        function closeAllModals() {
+            document.body.style.overflow = '';
+            const modals = document.querySelectorAll('.modal-overlay');
+            modals.forEach(modal => modal.classList.remove('active'));
+            if (typeof stopSpeech === 'function') stopSpeech();
+            unloadIframe('video-modal-iframe');
+            unloadIframe('pdf-iframe', 'pdf-loader');
+            unloadIframe('padlet-iframe', 'padlet-loader');
+            unloadIframe('composition-iframe', 'composition-loader');
+            unloadIframe('drawing-app-iframe', 'drawing-app-loader');
+        }
+
+        // Utilidades livianas para cargar iframes solo cuando se necesitan
+        function showIframeLoader(loaderId) {
+            const loader = document.getElementById(loaderId);
+            if (loader) loader.classList.remove('hidden');
+        }
+
+        function hideIframeLoader(loaderId) {
+            const loader = document.getElementById(loaderId);
+            if (loader) loader.classList.add('hidden');
+        }
+
+        function loadDeferredIframe(iframeId, loaderId) {
+            const iframe = document.getElementById(iframeId);
+            if (!iframe) return;
+            if (loaderId) showIframeLoader(loaderId);
+            const targetSrc = iframe.dataset?.src;
+            if (targetSrc && iframe.src !== targetSrc) iframe.src = targetSrc;
+        }
+
+        function unloadIframe(iframeId, loaderId) {
+            const iframe = document.getElementById(iframeId);
+            if (!iframe) return;
+            iframe.src = 'about:blank';
+            if (loaderId) hideIframeLoader(loaderId);
+        }
+
+        function optimizeMediaLoading() {
+            document.querySelectorAll('img').forEach((img, index) => {
+                if (index > 0 && !img.hasAttribute('loading')) img.setAttribute('loading', 'lazy');
+                if (!img.hasAttribute('decoding')) img.setAttribute('decoding', 'async');
+            });
+            document.querySelectorAll('iframe').forEach(iframe => {
+                if (!iframe.hasAttribute('loading')) iframe.setAttribute('loading', 'lazy');
+            });
+        }
+        optimizeMediaLoading();
+
+        // 2. Desplazamiento suave para Google Sites
+        function scrollToSection(sectionId) {
+            closeAllModals();
+            document.getElementById('mobile-menu')?.classList.add('hidden');
+            const section = document.getElementById(sectionId);
+            if (section) {
+                const yOffset = -80;
+                const y = section.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+            }
+        }
+
+        function scrollToTop() {
+            closeAllModals();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 3. Proyecto Data
         const projectData = {
             'semillas': { subtitle: 'Intercambiador de Atalaya, Cúcuta', title: 'Semillas de Memorias', color: 'bg-pola-yellow text-pola-dark', story: 'Realizado en 2024 en el intercambiador de Atalaya, este proyecto fue desarrollado por un colectivo de jóvenes con el apoyo del Ministerio de las Culturas, las Artes y los Saberes de Colombia. La intervención se centra en el concepto de la ancestralidad y la memoria histórica como pilares fundamentales para la construcción de paz. El proceso metodológico se basó en tres acciones: inspirar, educar y transformar. A través del muralismo, se buscó conectar a las nuevas generaciones con las herencias y tradiciones de sus mayores. Al educar a los más jóvenes sobre su pasado, se siembran "nuevas semillas" o brotes de consciencia que fortalecerán el tejido social del futuro. El mural funciona como un documento visual que honra los saberes ancestrales y demuestra cómo el arte público puede ser un puente intergeneracional para la preservación de la memoria en la comunidad.', images: ['https://github.com/novaleroso1-boop/colectivo/blob/main/1%20semillas.JPG?raw=true', 'https://github.com/novaleroso1-boop/colectivo/blob/main/2%20semillas.JPG?raw=true', 'https://github.com/novaleroso1-boop/colectivo/blob/main/4%20semillas.JPG?raw=true', 'https://github.com/novaleroso1-boop/colectivo/blob/main/6%20semilas.JPG?raw=true'] },
             'florecer': { subtitle: 'Cancha Los Almendros, Atalaya', title: 'Convivencia en Flor', color: 'bg-green-400 text-pola-dark', story: 'Llevado a cabo en 2022 en la cancha del barrio Los Almendros (Atalaya). Desarrollado gracias al programa de Estímulos de la ciudad de Cúcuta, este proyecto de creación colectiva aborda directamente la identidad binacional que caracteriza a esta zona de frontera. En sus inicios, las dinámicas migratorias generaron tensiones y estigmas que dificultaron la relación entre poblaciones colombianas y venezolanas. Sin embargo, el concepto de "Convivencia en Flor" ilustra cómo, con el paso del tiempo, esa relación se ha ido transformando, adaptando y floreciendo hacia una integración real. A través de la intervención artística, se narran esos procesos de conexión humana y resiliencia. El mural utiliza elementos visuales compartidos para explicar que, a pesar de las dificultades iniciales, la convivencia en la frontera ha ido mejorando, demostrando que el arte es un catalizador eficaz para sanar divisiones y celebrar la riqueza cultural que surge de la unión de dos naciones.', images: ['https://github.com/novaleroso1-boop/colectivo/blob/main/4%20florecer.jpeg?raw=true', 'https://github.com/novaleroso1-boop/colectivo/blob/main/1%20florecer.jpeg?raw=true', 'https://github.com/novaleroso1-boop/colectivo/blob/main/2%20florecer.jpeg?raw=true', 'https://github.com/novaleroso1-boop/colectivo/blob/main/3%20florecer.PNG?raw=true'] },
@@ -1097,13 +895,15 @@
             'colores': { subtitle: 'Vereda de Los Mangos', title: 'Colores que Siembran', color: 'bg-pola-blue text-white', story: 'Desarrollado en 2023 en la Vereda de Los Mangos. Este proyecto, respaldado por la convocatoria Jóvenes por el Cambio del Ministerio de las Culturas, fue concebido como un proceso formativo de varios meses. Más que la simple ejecución de un mural, el objetivo principal fue generar espacios reales de participación y apropiación para los niños y jóvenes del sector. Durante el proceso, los participantes no solo aprendieron sobre técnicas de pintura y muralismo, sino que trabajaron profundamente temas de paz, sana convivencia y transformación social. A través del juego y la colaboración, los niños se conectaron entre sí, fomentando el respeto mutuo. El resultado final fue una intervención pública integral: además del mural comunitario diseñado y pintado de manera colectiva, se realizó la recuperación y limpieza de las zonas verdes adyacentes, logrando una verdadera apropiación y embellecimiento del espacio público por parte de sus propios habitantes.', images: ['https://github.com/novaleroso1-boop/colectivo/blob/main/6%20colores.jpeg?raw=true', 'https://github.com/novaleroso1-boop/colectivo/blob/main/1%20colores.jpg?raw=true', 'https://github.com/novaleroso1-boop/colectivo/blob/main/3%20colores.jpeg?raw=true', 'https://github.com/novaleroso1-boop/colectivo/blob/main/5%20colores.jpg?raw=true'] }
         };
 
-        // 2. ROTACIÓN INICIO
+        // 4. Lógica de Rotadores (Home)
         function initImageRotators() {
             ['semillas', 'florecer', 'sabedores', 'colores'].forEach(key => {
                 const imgElement = document.getElementById(`rotator-${key}`);
-                const imagesArray = projectData[key].images;
+                const imagesArray = projectData[key]?.images;
+                if (!imgElement || !imagesArray?.length) return;
                 let currentIndex = 0;
                 setInterval(() => {
+                    if (document.hidden) return;
                     imgElement.classList.add('img-fade-out');
                     setTimeout(() => {
                         currentIndex = (currentIndex + 1) % imagesArray.length;
@@ -1115,171 +915,217 @@
         }
         initImageRotators();
 
-        // 3. LÓGICA MODAL PROYECTOS, INMERSIVO Y TTS
-        let isSpeaking = false; let currentUtterance = null; let galleryImages = []; let galleryIndex = 0; let modalCarouselInterval = null; let isImmersiveMode = true;
+        // 5. Lógica del Carrusel y Modal de Proyectos
+        let galleryImages = []; 
+        let galleryIndex = 0;
+        let isSpeaking = false;
+        let currentUtterance = null;
 
         function openProjectModal(projectId) {
-            const data = projectData[projectId]; if(!data) return;
-            galleryImages = data.images; galleryIndex = 0; isImmersiveMode = true;
-
-            const ttsBtn = document.getElementById('tts-btn');
-            ttsBtn.onclick = () => toggleSpeech(encodeURIComponent(data.story));
-            document.getElementById('show-text-btn').classList.remove('opacity-0', 'pointer-events-none');
+            closeAllModals(); 
+            document.body.style.overflow = 'hidden';
+            
+            const data = projectData[projectId]; 
+            if(!data) return;
+            
+            galleryImages = data.images; 
+            galleryIndex = 0;
 
             const html = `
-                <div class="absolute inset-0 w-full h-full bg-black group">
-                    <img id="modal-gallery-img" src="${galleryImages[0]}" class="w-full h-full object-contain transition-opacity duration-700">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40"></div>
-                    <button onclick="prevModalImage()" class="absolute left-6 top-1/2 -translate-y-1/2 w-14 h-14 bg-white/10 hover:bg-white/30 backdrop-blur rounded-full flex items-center justify-center text-white border border-white/20 z-40"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg></button>
-                    <button onclick="nextModalImage()" class="absolute right-6 top-1/2 -translate-y-1/2 w-14 h-14 bg-white/10 hover:bg-white/30 backdrop-blur rounded-full flex items-center justify-center text-white border border-white/20 z-40"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg></button>
-                    <div class="absolute bottom-10 left-6 md:left-12 flex items-end justify-between w-[calc(100%-3rem)] z-30">
-                        <div>
-                            <span class="${data.color} px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest shadow-lg mb-4 inline-block">${data.subtitle}</span>
-                            <h2 class="text-4xl md:text-6xl font-heading font-black text-white drop-shadow-2xl">${data.title}</h2>
-                        </div>
-                    </div>
+                <div class="relative w-full h-[100vh] shrink-0 bg-black group flex flex-col justify-center items-center">
+                    <img id="modal-gallery-img" src="${galleryImages[0]}" class="w-full h-full object-cover md:object-contain transition-opacity duration-200">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none"></div>
+                    
+                    <button onclick="prevModalImage()" class="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-12 h-12 md:w-16 md:h-16 bg-black/50 hover:bg-pola-yellow hover:text-black backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/20 z-40 transition-colors">
+                        <svg class="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+                    <button onclick="nextModalImage()" class="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-12 h-12 md:w-16 md:h-16 bg-black/50 hover:bg-pola-yellow hover:text-black backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/20 z-40 transition-colors">
+                        <svg class="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                    
+                    <button onclick="scrollDownToText()" class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center z-40 animate-bounce text-white/70 hover:text-pola-yellow transition-colors">
+                        <span class="text-[10px] md:text-xs font-black uppercase tracking-widest mb-2">Desliza para leer</span>
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                    </button>
                 </div>
-                <div id="text-card-container" class="absolute bottom-32 left-0 right-0 px-6 md:px-12 z-40 text-card-wrapper flex justify-center immersive-mode">
-                    <div class="bg-white/90 backdrop-blur-2xl rounded-[2rem] p-8 md:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] max-w-4xl w-full max-h-[50vh] overflow-y-auto">
-                        <h3 class="font-heading font-black text-2xl text-pola-dark mb-4 border-b border-gray-300 pb-2">📖 Contexto Histórico y Social</h3>
-                        <p class="text-gray-800 text-lg font-medium leading-relaxed">${data.story}</p>
+                
+                <div id="text-section-anchor" class="w-full bg-white relative z-30 pb-20">
+                    <div class="w-full h-3 ${data.color.split(' ')[0]}"></div>
+                    <div class="max-w-4xl mx-auto px-6 py-16 md:py-24 flex flex-col items-center text-center">
+                        <span class="${data.color} px-5 py-2 rounded-full text-xs font-black uppercase tracking-widest shadow-md mb-6 inline-block">${data.subtitle}</span>
+                        <h2 class="text-4xl md:text-6xl font-heading font-black text-pola-dark mb-8 leading-tight">${data.title}</h2>
+                        <div class="w-24 h-1.5 bg-gray-200 rounded-full mb-10"></div>
+                        <h3 class="font-heading font-black text-xl md:text-2xl text-pola-blue mb-6 flex items-center gap-3 justify-center w-full">
+                            <span>📖</span> Contexto Histórico y Social
+                        </h3>
+                        <p class="text-gray-700 text-lg md:text-xl leading-relaxed font-medium text-justify md:text-center">${data.story}</p>
                     </div>
                 </div>
             `;
             document.getElementById('modal-body').innerHTML = html;
             document.getElementById('project-modal').classList.add('active');
             
-            stopModalCarousel(); modalCarouselInterval = setInterval(nextModalImage, 4000);
+            const ttsBtn = document.getElementById('tts-btn');
+            ttsBtn.onclick = () => toggleSpeech(encodeURIComponent(data.story));
             setTimeout(() => { if(!isSpeaking) toggleSpeech(encodeURIComponent(data.story)); }, 600);
         }
 
+        function scrollDownToText() {
+            const modal = document.querySelector('#project-modal .modal-content');
+            const section = document.getElementById('text-section-anchor');
+            if (modal && section) {
+                modal.scrollTo({ top: section.offsetTop, behavior: 'smooth' });
+            }
+        }
+
+        function nextModalImage() { 
+            galleryIndex = (galleryIndex + 1) % galleryImages.length; 
+            updateModalImage(); 
+        }
+        function prevModalImage() { 
+            galleryIndex = (galleryIndex - 1 + galleryImages.length) % galleryImages.length; 
+            updateModalImage(); 
+        }
+        function updateModalImage() {
+            const img = document.getElementById('modal-gallery-img');
+            img.style.opacity = '0';
+            setTimeout(() => { img.src = galleryImages[galleryIndex]; img.style.opacity = '1'; }, 150);
+        }
+
         function closeProjectModal() {
-            stopSpeech(); stopModalCarousel();
+            if (typeof stopSpeech === 'function') stopSpeech();
+            document.body.style.overflow = '';
             document.getElementById('project-modal').classList.remove('active');
             setTimeout(() => { document.getElementById('modal-body').innerHTML = ''; }, 300);
         }
 
-        function stopModalCarousel() { if(modalCarouselInterval) clearInterval(modalCarouselInterval); }
-        function nextModalImage() { galleryIndex = (galleryIndex + 1) % galleryImages.length; updateModalImage(); }
-        function prevModalImage() { galleryIndex = (galleryIndex - 1 + galleryImages.length) % galleryImages.length; updateModalImage(); stopModalCarousel(); modalCarouselInterval = setInterval(nextModalImage, 4000); }
-        function updateModalImage() {
-            const imgElement = document.getElementById('modal-gallery-img');
-            imgElement.style.opacity = '0'; setTimeout(() => { imgElement.src = galleryImages[galleryIndex]; imgElement.style.opacity = '1'; }, 300);
+        // 6. Funciones Generales y Menús
+        function openPadlet() {
+            closeAllModals(); 
+            document.getElementById('padlet-modal').classList.add('active');
+            loadDeferredIframe('padlet-iframe', 'padlet-loader');
         }
 
-        function toggleImmersiveMode() {
-            const container = document.getElementById('text-card-container');
-            const showBtnLabel = document.getElementById('show-text-btn');
-            if (isImmersiveMode) { container.classList.remove('immersive-mode'); showBtnLabel.innerHTML = '🖼️ Ver Solo Fotos'; isImmersiveMode = false; } 
-            else { container.classList.add('immersive-mode'); showBtnLabel.innerHTML = '📖 Leer Relato'; isImmersiveMode = true; }
+        function closePadletModal() {
+            document.getElementById('padlet-modal').classList.remove('active');
+            setTimeout(() => unloadIframe('padlet-iframe', 'padlet-loader'), 300);
         }
 
-        function toggleSpeech(encodedText) {
-            const text = decodeURIComponent(encodedText);
-            const btnLabel = document.getElementById('tts-label'); const btnIcon = document.getElementById('tts-icon'); const btn = document.getElementById('tts-btn');
-            if (isSpeaking) stopSpeech(); else startSpeech(text, btnLabel, btnIcon, btn);
+        function closeCompositionModal() {
+            document.getElementById('composition-modal').classList.remove('active');
+            setTimeout(() => unloadIframe('composition-iframe', 'composition-loader'), 300);
         }
-        function startSpeech(text, labelElement, iconElement, btnElement) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                currentUtterance = new SpeechSynthesisUtterance(text); currentUtterance.lang = 'es-CO'; currentUtterance.rate = 0.95; 
-                currentUtterance.onstart = function() { isSpeaking = true; labelElement.innerText = "Pausar Relato"; iconElement.innerText = "⏸️"; btnElement.classList.add('bg-white', 'text-pola-dark'); btnElement.classList.remove('text-white', 'bg-transparent'); };
-                currentUtterance.onend = resetSpeechUI; currentUtterance.onerror = resetSpeechUI;
-                window.speechSynthesis.speak(currentUtterance);
+
+        function openDrawingApp() {
+            document.getElementById('drawing-app-modal').classList.add('active');
+            loadDeferredIframe('drawing-app-iframe', 'drawing-app-loader');
+        }
+
+        function closeDrawingApp() {
+            document.getElementById('drawing-app-modal').classList.remove('active');
+            setTimeout(() => unloadIframe('drawing-app-iframe', 'drawing-app-loader'), 300);
+        }
+
+        function navigateWorkshop(direction) {
+            const newIndex = currentWorkshopIndex + direction;
+            if (newIndex >= 0 && newIndex < workshopsList.length) {
+                const ws = workshopsList[newIndex];
+                openPdfViewer(ws.url, ws.title);
             }
-        }
-        function stopSpeech() { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); resetSpeechUI(); }
-        function resetSpeechUI() {
-            isSpeaking = false;
-            const label = document.getElementById('tts-label'); const icon = document.getElementById('tts-icon'); const btn = document.getElementById('tts-btn');
-            if(label && icon && btn) { label.innerText = "Escuchar Relato"; icon.innerText = "🔊"; btn.classList.remove('bg-white', 'text-pola-dark'); btn.classList.add('text-white', 'bg-transparent'); }
-        }
-
-        // LÓGICA MODAL DE VIDEO
-        function openVideoModal(videoId, title) {
-            document.getElementById('video-modal-title').innerHTML = `<span class="text-3xl">👨‍🎨</span> ${title}`;
-            document.getElementById('video-modal-iframe').src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-            document.getElementById('video-modal').classList.add('active');
-        }
-        function closeVideoModal() {
-            document.getElementById('video-modal').classList.remove('active');
-            setTimeout(() => { document.getElementById('video-modal-iframe').src = ''; }, 300);
-        }
-
-        // 4. RUTAS PEDAGÓGICAS Y MENÚ DE TALLERES (DESPLEGABLE Y PDF)
-        function toggleTalleresDropdown() {
-            const dropdown = document.getElementById('talleres-dropdown');
-            dropdown.classList.toggle('hidden');
-            dropdown.classList.toggle('flex');
-        }
-
-        // Cierra el dropdown si se hace clic afuera de él
-        window.addEventListener('click', function(e) {
-            const container = document.getElementById('talleres-dropdown-container');
-            const dropdown = document.getElementById('talleres-dropdown');
-            if (container && !container.contains(e.target) && dropdown) {
-                dropdown.classList.add('hidden');
-                dropdown.classList.remove('flex');
-            }
-        });
-
-        function toggleMobileTalleres() {
-            const list = document.getElementById('mobile-talleres-list');
-            const icon = document.getElementById('mobile-talleres-icon');
-            list.classList.toggle('hidden');
-            list.classList.toggle('flex');
-            icon.classList.toggle('rotate-180');
         }
 
         function openPdfViewer(pdfUrl, title) {
-            const dropdown = document.getElementById('talleres-dropdown');
-            if (dropdown) {
-                dropdown.classList.add('hidden');
-                dropdown.classList.remove('flex');
-            }
+            const pdfModal = document.getElementById('pdf-modal');
+            const pdfAlreadyOpen = pdfModal?.classList.contains('active');
+            if (!pdfAlreadyOpen) closeAllModals();
 
             if (!pdfUrl) {
                 alert('¡Estamos diseñando este taller! Pronto estará disponible en formato de guía PDF.');
                 return;
             }
             
-            document.getElementById('pdf-modal-title').innerHTML = `📚 ${title}`;
+            currentWorkshopIndex = workshopsList.findIndex(w => w.title === title);
+
+            for(let i=0; i<4; i++) {
+                const btn = document.getElementById(`sb-taller-${i}`);
+                if(btn) {
+                    if(i === currentWorkshopIndex) {
+                        btn.className = 'sidebar-btn w-full p-2 md:px-4 md:py-3 rounded-xl font-bold text-xs md:text-sm transition-all text-center md:text-left bg-pola-dark text-white shadow-md mb-1';
+                    } else {
+                        btn.className = 'sidebar-btn w-full p-2 md:px-4 md:py-3 rounded-xl font-bold text-xs md:text-sm transition-all text-center md:text-left text-gray-500 hover:bg-gray-100 mb-1';
+                    }
+                }
+            }
+
+            const sbExplora = document.getElementById('sb-explora');
+            const sbExploraIcon = document.getElementById('sb-explora-icon');
+            if (sbExplora && sbExploraIcon) {
+                const exploraStyles = [
+                    { bg: 'bg-pola-yellow', text: 'text-pola-dark', icon: '🎨', border: 'border-pola-yellow' },
+                    { bg: 'bg-green-400', text: 'text-pola-dark', icon: '📏', border: 'border-green-400' },
+                    { bg: 'bg-purple-500', text: 'text-white', icon: '💭', border: 'border-purple-500' },
+                    { bg: 'bg-blue-500', text: 'text-white', icon: '🧱', border: 'border-blue-500' }
+                ];
+                if (currentWorkshopIndex >= 0 && currentWorkshopIndex < exploraStyles.length) {
+                    const style = exploraStyles[currentWorkshopIndex];
+                    sbExplora.className = `w-full p-2 md:px-4 md:py-3 rounded-xl font-black text-[10px] md:text-sm uppercase tracking-widest transition-all text-center flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 shadow-sm border-2 ${style.bg} ${style.text} ${style.border} hover:scale-105`;
+                    sbExploraIcon.innerHTML = style.icon;
+                    sbExplora.style.display = 'flex';
+                } else {
+                    sbExplora.style.display = 'none';
+                }
+            }
             
             let finalUrl = pdfUrl;
-            
-            // Si es un enlace de Google Drive, lo convertimos a formato "preview" para incrustar sin problemas
             if (pdfUrl.includes('drive.google.com')) {
                 finalUrl = pdfUrl.replace('/view?usp=sharing', '/preview').replace('/view', '/preview');
             } else {
-                // Si es un enlace directo a un .pdf, usamos Google Docs Viewer
                 finalUrl = `https://docs.google.com/gview?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
             }
-            
-            document.getElementById('pdf-iframe').src = finalUrl;
+            const pdfIframe = document.getElementById('pdf-iframe');
+            showIframeLoader('pdf-loader');
+            if (pdfIframe) pdfIframe.src = finalUrl;
             document.getElementById('pdf-modal').classList.add('active');
+        }
+
+        function triggerCurrentExplora() {
+            const workshopIds = ['color', 'composicion', 'conceptualizacion', 'ejecucion'];
+            if (currentWorkshopIndex >= 0 && currentWorkshopIndex < workshopIds.length) {
+                // Keep the PDF modal active in the background
+                openWorkshopSelection(workshopIds[currentWorkshopIndex], true);
+            }
         }
 
         function closePdfModal() {
             document.getElementById('pdf-modal').classList.remove('active');
-            setTimeout(() => { document.getElementById('pdf-iframe').src = ''; }, 300);
+            setTimeout(() => unloadIframe('pdf-iframe', 'pdf-loader'), 300);
         }
 
-        function openWorkshopSelection(tallerId) {
+        // 7. Modificación de Modales de Opciones de Taller
+        function openWorkshopSelection(tallerId, keepPdfOpen = false) {
+            if (!keepPdfOpen) {
+                closeAllModals();
+            } else {
+                const modals = document.querySelectorAll('.modal-overlay');
+                modals.forEach(modal => {
+                    if (modal.id !== 'pdf-modal') {
+                        modal.classList.remove('active');
+                    }
+                });
+                if (typeof stopSpeech === 'function') stopSpeech();
+                const videoIframe = document.getElementById('video-modal-iframe');
+                if(videoIframe) videoIframe.src = '';
+            }
+
             let optionsHtml = '';
             
             if(tallerId === 'color' || tallerId === 'taller1') {
                 optionsHtml = `
-                    <div onclick="openActivity('canvas-modal')" class="bg-gradient-to-br from-pola-yellow to-yellow-500 rounded-[2rem] p-8 cursor-pointer hover:-translate-y-2 transition-all text-center border border-white/20 shadow-xl group">
+                    <div onclick="openActivity('canvas-modal')" class="col-span-1 md:col-span-2 bg-gradient-to-br from-pola-yellow to-yellow-500 rounded-[2rem] p-8 cursor-pointer hover:-translate-y-2 transition-all text-center border border-white/20 shadow-xl group">
                         <div class="text-6xl mb-4 group-hover:scale-110 transition-transform drop-shadow-md">🎨</div>
-                        <h3 class="font-heading font-black text-2xl mb-2 text-pola-dark">Opción A: Pintura Digital</h3>
-                        <p class="font-medium text-yellow-900 text-sm mb-6">Pizarra de Emociones. Experimenta con la psicología del color en la web.</p>
-                        <span class="bg-pola-dark/10 text-pola-dark font-bold px-6 py-2 rounded-full text-xs uppercase tracking-widest group-hover:bg-pola-dark group-hover:text-pola-yellow transition-colors">Seleccionar</span>
-                    </div>
-                    <div onclick="openUploadModal('Taller de Esténcil Casero', '🧽', 'Dibuja una forma simple en un cartón reciclado y recórtala con cuidado para crear una plantilla (esténcil). Luego, usa una esponja con vinilo o témpera para estampar la figura repetidas veces sobre una hoja. ¡Sube la foto!')" class="bg-gradient-to-br from-red-400 to-red-600 rounded-[2rem] p-8 cursor-pointer hover:-translate-y-2 transition-all text-center border border-white/20 shadow-xl group">
-                        <div class="text-6xl mb-4 group-hover:scale-110 transition-transform">🧽</div>
-                        <h3 class="font-heading font-black text-2xl mb-2 text-white">Opción B: Técnica Manual</h3>
-                        <p class="font-medium text-red-100 text-sm mb-6">Crea tu propio esténcil y haz una composición con pintura.</p>
-                        <span class="bg-white/20 text-white font-bold px-6 py-2 rounded-full text-xs uppercase tracking-widest group-hover:bg-white group-hover:text-red-600 transition-colors">Seleccionar</span>
+                        <h3 class="font-heading font-black text-2xl md:text-3xl mb-2 text-pola-dark">Experimenta en Digital</h3>
+                        <p class="font-medium text-yellow-900 text-sm md:text-base mb-6">Pizarra de Emociones. Experimenta con la psicología del color en la web dibujando libremente.</p>
+                        <span class="bg-pola-dark/10 text-pola-dark font-bold px-8 py-3 rounded-full text-xs uppercase tracking-widest group-hover:bg-pola-dark group-hover:text-pola-yellow transition-colors">Abrir Pizarra</span>
                     </div>
                 `;
             } else if (tallerId === 'composicion' || tallerId === 'taller2') {
@@ -1293,22 +1139,16 @@
                 `;
             } else if (tallerId === 'conceptualizacion' || tallerId === 'taller3') {
                 optionsHtml = `
-                    <div onclick="openTextModal('El Muro de las Voces', '✍️', 'El muralismo nace de la investigación. Selecciona una historia relevante para tu comunidad (un personaje importante, el medio ambiente, una tradición o el territorio). Escribe una anécdota corta sobre este tema y los valores que representa.')" class="bg-gradient-to-br from-purple-500 to-purple-800 rounded-[2rem] p-8 cursor-pointer hover:-translate-y-2 transition-all text-center border border-white/20 shadow-xl group">
-                        <div class="text-6xl mb-4 group-hover:scale-110 transition-transform">✍️</div>
-                        <h3 class="font-heading font-black text-2xl mb-2 text-white">Opción A: Narrativa Local</h3>
-                        <p class="font-medium text-purple-100 text-sm mb-6">Escribe un relato sobre una historia vital de tu barrio.</p>
-                        <span class="bg-white/20 text-white font-bold px-6 py-2 rounded-full text-xs uppercase tracking-widest group-hover:bg-white group-hover:text-purple-800 transition-colors">Seleccionar</span>
-                    </div>
-                    <div onclick="openGuideConceptoModal()" class="bg-gradient-to-br from-pola-yellow to-yellow-600 rounded-[2rem] p-8 cursor-pointer hover:-translate-y-2 transition-all text-center border border-white/20 shadow-xl group">
+                    <div onclick="openGuideConceptoModal()" class="col-span-1 md:col-span-2 bg-gradient-to-br from-pola-yellow to-yellow-600 rounded-[2rem] p-8 cursor-pointer hover:-translate-y-2 transition-all text-center border border-white/20 shadow-xl group">
                         <div class="text-6xl mb-4 group-hover:scale-110 transition-transform">💡</div>
-                        <h3 class="font-heading font-black text-2xl mb-2 text-pola-dark">Opción B: Guía de Creación</h3>
-                        <p class="font-medium text-yellow-900 text-sm mb-6">Paso a paso: Cómo pasar de una historia a una ilustración.</p>
-                        <span class="bg-pola-dark/10 text-pola-dark font-bold px-6 py-2 rounded-full text-xs uppercase tracking-widest group-hover:bg-pola-dark group-hover:text-white transition-colors">Seleccionar</span>
+                        <h3 class="font-heading font-black text-2xl md:text-3xl mb-2 text-pola-dark">Guía de Creación</h3>
+                        <p class="font-medium text-yellow-900 text-sm md:text-base mb-6">Paso a paso: Cómo pasar de una historia a una ilustración de manera estructurada.</p>
+                        <span class="bg-pola-dark/10 text-pola-dark font-bold px-8 py-3 rounded-full text-xs uppercase tracking-widest group-hover:bg-pola-dark group-hover:text-white transition-colors">Ver Guía</span>
                     </div>
                 `;
             } else if (tallerId === 'ejecucion' || tallerId === 'taller4') {
                 optionsHtml = `
-                    <div onclick="openActivity('grid-modal')" class="bg-gradient-to-br from-blue-500 to-blue-800 rounded-[2rem] p-8 cursor-pointer hover:-translate-y-2 transition-all text-center border border-white/20 shadow-xl group">
+                    <div onclick="openActivity('grid-modal')" class="col-span-1 md:col-span-2 bg-gradient-to-br from-blue-500 to-blue-800 rounded-[2rem] p-8 cursor-pointer hover:-translate-y-2 transition-all text-center border border-white/20 shadow-xl group">
                         <div class="text-6xl mb-4 group-hover:scale-110 transition-transform">🔲</div>
                         <h3 class="font-heading font-black text-2xl mb-2 text-white">Opción A: Simulador de Escala</h3>
                         <p class="font-medium text-blue-100 text-sm mb-6">El Reto de la Cuadrícula. Amplía una imagen en pantalla.</p>
@@ -1327,25 +1167,24 @@
             document.getElementById('selection-modal').classList.add('active');
         }
 
-        // 5. MANEJO DE MODALES
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function closeModal(id) {
+            if (id === 'pdf-modal') return closePdfModal();
+            if (id === 'padlet-modal') return closePadletModal();
+            if (id === 'composition-modal') return closeCompositionModal();
+            if (id === 'drawing-app-modal') return closeDrawingApp();
+            if (id === 'video-modal') return closeVideoModal();
+            if (id === 'project-modal') return closeProjectModal();
+            document.getElementById(id)?.classList.remove('active');
+        }
+        
         function openActivity(id) {
             closeModal('selection-modal');
             setTimeout(() => { 
                 document.getElementById(id).classList.add('active');
                 if(id === 'canvas-modal') setTimeout(initCanvas, 300);
                 if(id === 'grid-modal') setTimeout(initGridGame, 300);
+                if(id === 'composition-modal') loadDeferredIframe('composition-iframe', 'composition-loader');
             }, 300);
-        }
-
-        function openUploadModal(title, icon, desc) {
-            closeModal('selection-modal'); document.getElementById('upload-title').innerText = title; document.getElementById('upload-icon').innerText = icon; document.getElementById('upload-desc').innerText = desc;
-            setTimeout(() => { document.getElementById('upload-modal').classList.add('active'); }, 300);
-        }
-
-        function openTextModal(title, icon, desc) {
-            closeModal('selection-modal'); document.getElementById('text-title').innerText = title; document.getElementById('text-icon').innerText = icon; document.getElementById('text-desc').innerText = desc; document.getElementById('text-input').value = '';
-            setTimeout(() => { document.getElementById('text-modal').classList.add('active'); }, 300);
         }
 
         function openGuideModal() {
@@ -1358,15 +1197,41 @@
             setTimeout(() => { document.getElementById('guide-modal-concepto').classList.add('active'); }, 300);
         }
 
-        function publishStory() {
-            const input = document.getElementById('text-input'); if(input.value.trim() === '') return;
-            const feed = document.getElementById('story-feed'); const newPost = document.createElement('div');
-            newPost.className = 'bg-white p-4 rounded-xl text-sm font-medium text-gray-800 border border-gray-200 shadow-sm';
-            newPost.innerHTML = `"${input.value}" <span class="block text-xs font-black text-pola-purple mt-2">- Tú</span>`;
-            feed.prepend(newPost); input.value = '';
+        function openVideoModal(videoId, title) {
+            closeAllModals(); 
+            document.getElementById('video-modal-title').innerHTML = `<span class="text-3xl">👨‍🎨</span> ${title}`;
+            document.getElementById('video-modal-iframe').src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+            document.getElementById('video-modal').classList.add('active');
+        }
+        
+        function closeVideoModal() {
+            document.getElementById('video-modal').classList.remove('active');
+            setTimeout(() => unloadIframe('video-modal-iframe'), 300);
         }
 
-        // 6. JUEGO: EL ARTE DE LA CUADRÍCULA
+        // 8. TTS Lógica 
+        function toggleSpeech(encodedText) {
+            const text = decodeURIComponent(encodedText);
+            const btnLabel = document.getElementById('tts-label'); const btnIcon = document.getElementById('tts-icon'); const btn = document.getElementById('tts-btn');
+            if (isSpeaking) stopSpeech(); else startSpeech(text, btnLabel, btnIcon, btn);
+        }
+        function startSpeech(text, labelElement, iconElement, btnElement) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                currentUtterance = new SpeechSynthesisUtterance(text); currentUtterance.lang = 'es-CO'; currentUtterance.rate = 0.95; 
+                currentUtterance.onstart = function() { isSpeaking = true; labelElement.innerText = "Pausar Relato"; iconElement.innerText = "⏸️"; btnElement.classList.add('bg-white', 'text-pola-dark'); btnElement.classList.remove('text-white', 'bg-black/50'); };
+                currentUtterance.onend = resetSpeechUI; currentUtterance.onerror = resetSpeechUI;
+                window.speechSynthesis.speak(currentUtterance);
+            }
+        }
+        function stopSpeech() { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); resetSpeechUI(); }
+        function resetSpeechUI() {
+            isSpeaking = false;
+            const label = document.getElementById('tts-label'); const icon = document.getElementById('tts-icon'); const btn = document.getElementById('tts-btn');
+            if(label && icon && btn) { label.innerText = "Escuchar Relato"; icon.innerText = "🔊"; btn.classList.remove('bg-white', 'text-pola-dark'); btn.classList.add('text-white', 'bg-black/50'); }
+        }
+
+        // 9. LÓGICA DE JUEGOS: CUADRÍCULA Y CANVAS
         const gridCols = 12; const gridRows = 16;
         const gridColors = { 0: '#ffffff', 1: '#1e3a8a', 2: '#7dd3fc', 3: '#fde047', 4: '#ea580c', 5: '#111827', 6: '#78350f' };
         const targetPattern = [
@@ -1408,22 +1273,75 @@
             const link = document.createElement('a'); link.download = 'mi_cuadricula_mural.png'; link.href = canvas.toDataURL('image/png'); link.click();
         }
 
-        // 8. LÓGICA CANVAS
-        let ctx, isDrawing = false;
+        let ctx, isDrawing = false, canvasInitialized = false, resizeDrawingCanvas = null;
         function initCanvas() {
-            const canvasEl = document.getElementById('drawing-canvas'); ctx = canvasEl.getContext('2d');
-            function resize() {
-                const rect = canvasEl.parentElement.getBoundingClientRect();
-                if (rect.width > 0) { const temp = document.createElement('canvas'); temp.width = canvasEl.width; temp.height = canvasEl.height; temp.getContext('2d').drawImage(canvasEl, 0, 0); canvasEl.width = rect.width; canvasEl.height = rect.height; updateBrushSettings(); ctx.drawImage(temp, 0, 0); }
+            const canvasEl = document.getElementById('drawing-canvas');
+            if (!canvasEl) return;
+            ctx = canvasEl.getContext('2d');
+
+            function updateBrushSettings() {
+                ctx.lineJoin = 'round';
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = document.getElementById('color-picker').value;
+                ctx.lineWidth = document.getElementById('brush-size').value;
             }
-            resize(); window.addEventListener('resize', resize);
-            function updateBrushSettings() { ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = document.getElementById('color-picker').value; ctx.lineWidth = document.getElementById('brush-size').value; }
-            document.getElementById('color-picker').addEventListener('input', updateBrushSettings); document.getElementById('brush-size').addEventListener('input', updateBrushSettings);
-            function startPos(e) { isDrawing = true; draw(e); } function endPos() { isDrawing = false; ctx.beginPath(); }
-            function draw(e) { if (!isDrawing) return; const rect = canvasEl.getBoundingClientRect(); const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left; const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top; ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); }
-            canvasEl.onmousedown = startPos; canvasEl.onmouseup = endPos; canvasEl.onmousemove = draw; canvasEl.onmouseout = endPos; canvasEl.ontouchstart = (e) => { e.preventDefault(); startPos(e); }; canvasEl.ontouchend = endPos; canvasEl.ontouchmove = (e) => { e.preventDefault(); draw(e); };
+
+            if (!resizeDrawingCanvas) {
+                resizeDrawingCanvas = function() {
+                    const rect = canvasEl.parentElement.getBoundingClientRect();
+                    if (rect.width > 0) {
+                        const temp = document.createElement('canvas');
+                        temp.width = canvasEl.width;
+                        temp.height = canvasEl.height;
+                        temp.getContext('2d').drawImage(canvasEl, 0, 0);
+                        canvasEl.width = rect.width;
+                        canvasEl.height = rect.height;
+                        updateBrushSettings();
+                        ctx.drawImage(temp, 0, 0);
+                    }
+                };
+                window.addEventListener('resize', resizeDrawingCanvas);
+            }
+
+            resizeDrawingCanvas();
+            updateBrushSettings();
+
+            if (canvasInitialized) return;
+            canvasInitialized = true;
+
+            document.getElementById('color-picker').addEventListener('input', updateBrushSettings);
+            document.getElementById('brush-size').addEventListener('input', updateBrushSettings);
+
+            function startPos(e) { isDrawing = true; draw(e); }
+            function endPos() { isDrawing = false; ctx.beginPath(); }
+            function draw(e) {
+                if (!isDrawing) return;
+                const rect = canvasEl.getBoundingClientRect();
+                const point = e.touches ? e.touches[0] : e;
+                const x = point.clientX - rect.left;
+                const y = point.clientY - rect.top;
+                ctx.lineTo(x, y);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+            }
+
+            canvasEl.onmousedown = startPos;
+            canvasEl.onmouseup = endPos;
+            canvasEl.onmousemove = draw;
+            canvasEl.onmouseout = endPos;
+            canvasEl.ontouchstart = (e) => { e.preventDefault(); startPos(e); };
+            canvasEl.ontouchend = endPos;
+            canvasEl.ontouchmove = (e) => { e.preventDefault(); draw(e); };
         }
         function clearCanvas() { const canvasEl = document.getElementById('drawing-canvas'); canvasEl.getContext('2d').clearRect(0, 0, canvasEl.width, canvasEl.height); }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key !== 'Escape') return;
+            const activeModals = Array.from(document.querySelectorAll('.modal-overlay.active'));
+            const lastActiveModal = activeModals[activeModals.length - 1];
+            if (lastActiveModal?.id) closeModal(lastActiveModal.id);
+        });
 
     </script>
 </body>
